@@ -24,9 +24,9 @@
 
 | Image                                                        | Name                                                      | Etc                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------ |
-| <image src= "./images/START/raspberrypi_pico.PNG" width="200px" height="110px"> | [**Raspberry Pi Pico**][link-raspberry_pi_pico]           | [Pico Document](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html) |
-| <image src= "./images/START/WIZnet-Ethernet-HAT-1.png" width="240px" height="80px"> | [**WIZnet Ethernet HAT**][link-wiznet_ethernet_hat]       | [Ethernet HAT Datasheet](https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat) |
-| <image src= "./images/START/W5100S-EVB-Pico_1.png" width="250px" height="90px"> | [**WIZnet W5100S-EVB-Pico**][link-wiznet_W5100S_evb_pico] | [W5100S-EVB-Pico Datasheet][link-wiznet_W5100S_evb_pico]     |
+| <image src= "./static/images/START/raspberrypi_pico.PNG" width="200px" height="110px"> | [**Raspberry Pi Pico**][link-raspberry_pi_pico]           | [Pico Document](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html) |
+| <image src= "./static/images/START/WIZnet-Ethernet-HAT-1.png" width="240px" height="80px"> | [**WIZnet Ethernet HAT**][link-wiznet_ethernet_hat]       | [Ethernet HAT Datasheet](https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat) |
+| <image src= "./static/images/START/W5100S-EVB-Pico_1.png" width="250px" height="90px"> | [**WIZnet W5100S-EVB-Pico**][link-wiznet_W5100S_evb_pico] | [W5100S-EVB-Pico Datasheet][link-wiznet_W5100S_evb_pico]     |
 
 > ### Pin Diagram
 
@@ -268,8 +268,8 @@ Link
 
 
 
-[link-PICO_HAT]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/HAT.png
-[link-PICO_EVB]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/EVB.png
+[link-PICO_HAT]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/HAT.png
+[link-PICO_EVB]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/EVB.png
 
 [link-raspberry_pi_pico]: https://www.raspberrypi.org/products/raspberry-pi-pico
 [link-wiznet_ethernet_hat]: https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat
@@ -278,17 +278,17 @@ Link
 
 
 
-[link-Micropython]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/MicroPython_Thonny.png
+[link-Micropython]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/MicroPython_Thonny.png
 [link-Setup Ethernet Libraray]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/libraries
-[link-firmware]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/firmware.png
-[link-setup_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/thonny-configure-interpreter.png
-[link-setup_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/thonny-interpreter-settings.png
-[link-setup_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/thonny-bootsel.png
-[link-setup_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/thonny-firmware-install.png
-[link-setup_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/repl-connected.png
+[link-firmware]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/firmware.png
+[link-setup_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-configure-interpreter.png
+[link-setup_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-interpreter-settings.png
+[link-setup_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-bootsel.png
+[link-setup_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-firmware-install.png
+[link-setup_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/repl-connected.png
 
-[link-mpy_lib_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/mpy_lib_1.png
-[link-mpy_lib_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/mpy_lib_2.png
+[link-mpy_lib_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_1.png
+[link-mpy_lib_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_2.png
 
 
 
@@ -302,10 +302,10 @@ Link
 
 
 
-[link-ping_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/Pico_ping.png
-[link-ping_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/pico_ping2.png
-[link-ping_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/pico_ping3.png
-[link-ping_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/pico_ping4.png
+[link-ping_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/Pico_ping.png
+[link-ping_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/pico_ping2.png
+[link-ping_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/pico_ping3.png
+[link-ping_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/pico_ping4.png
 
 
 _[▲ Back to Top](#Ethernet_Example_Getting_Started)_ 
