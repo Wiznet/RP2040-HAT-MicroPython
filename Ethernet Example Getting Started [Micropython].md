@@ -1,5 +1,5 @@
 
-
+<a name="Ethernet_Example_Getting_Started"></a>
 :rocket:Ethernet Example Getting Started [MicroPython]
 ===========================
 
@@ -54,21 +54,79 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
 | I    | GPIO21   | Connected to **INTn** on W5100S                |
 | I    | GPIO24   | VBUS sense - high if VBUS is present, else low |
 | O    | GPIO25   | Connected to user LED                          |
-| I    | GPIO25   | Used in ADC mode (ADC3) to measure VSYS/3      |
+| I    | GPIO29   | Used in ADC mode (ADC3) to measure VSYS/3      |
 
 <a name="development_environment_configuration"></a>
 
 # :bulb:Development environment configuration
 
-> To test the ethernet examples, the development environment must be configured to use Raspberry Pi Pico. The ethernet examples were tested by configuring the development environment for **Windows**. Please refer to the '**9.2. Building on MS Windows**' section of '**Getting started with Raspberry Pi Pico**' document below and configure accordingly.
 
-![][link-Micropython]
 
+> To test the ethernet examples, the development environment must be configured to use Raspberry Pi Pico. 
+
+- Required development environment
+   - CMake (more then ver 3.12 )
+   - [Thonny](https://thonny.org/) (that makes it easier to use micropython) 
+- If you must be need to compile the micropython ,your pc should be use Linux or Unix environment.
 
 
 <a name="step1--installing-circuitpython"></a>
 
 ## STEP - 1 : [**Installing Micropython**][link-Installing Micropython]
+
+1. Download
+If the ethernet examples are cloned, the library set as a submodule is an empty directory. Therefore, if you want to download the library set as a submodule together, clone the ethernet examples with the following Git command.
+
+```cpp
+/* Change directory */
+// change to the directory to clone
+cd [user path]
+
+// e.g.
+cd D:/RP2040
+
+/* Clone */
+git clone --recurse-submoduleshttps://github.com/Wiznet/RP2040-HAT-MicroPython.git
+```
+
+With Visual Studio Code, the library set as a submodule is automatically downloaded, so it doesn't matter whether the library set as a submodule is an empty directory or not, so refer to it.
+
+
+2. Patch
+
+With Visual Studio Code, each library set as a submodule is automatically patched, but if you do not use Visual Studio Code, each library set as a submodule must be manually patched with the Git commands below in each library directory.
+
+Below is a brief description of the patch file
+
+ ```cpp
+  0001-Added-WIZnet-Chip-library.patch : about Ethernet(WIZnet Chip)
+  0002-Added-AXTLSlibrary.patch : about SSL/TLS(AXTLS)
+```
+ 
+- Micropython
+```cpp
+// First Method
+    /* Change directory */
+    // change to the library directory
+    cd [user path]/RP2040-HAT-C/libraries
+
+    // e.g.
+    cd D:/RP2040/RP2040-HAT-C/libraries
+
+    /* Patch*/
+    git apply ../../patches/0001-Added-WIZnet-Chip-library.patch
+    git apply ../../patches/0002-Added-AXTLSlibrary.patch
+//Second Method
+    cd [user path(=github source code setup path)]
+    /* Patch */
+    cmake CMakeLists.txt
+
+```
+
+After that, you can visit the micropython link below and check it
+
+
+[https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code](https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code)
 
 :warning:**Notice**
 
@@ -82,9 +140,6 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 - The drive will be called **RPI-RP2** on all RP2040 boards. Download the **UF2**(firmware.uf2) file from the link below and put the file in Pico.
 
-File link - [firmware.uf2](https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/firmware.uf2?raw=true)
-
-![][link-firmware]
 
 - You can also access the firmware installation menu if you click on **MicroPython (Raspberry Pi Pico)** in the status bar and choose ‘Configure interpreter …’.
 
@@ -186,13 +241,9 @@ ping 192.168.1.20 (-option)
 
 Documentation for WIZnet Ethernet HAT and Raspberry pi pico board
 ## Raspberry Pi Pico
- [**Raspberry Pi Pico Datasheet**](https://datasheets.raspberrypi.org/pico/pico-datasheet.pdf)
+ [**Raspberry Pi Pico Datasheet**](https://datasheets.raspberrypi.org/pico/pico-datasheet.pdf) : An RP2040-based microcontroller board
 
-  An RP2040-based microcontroller board
-
- [**Getting started with Raspberry Pi Pico**](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html)
-
- C/C++ development with Raspberry Pi Pico and other RP2040-based microcontroller boards
+ [**Getting started with Raspberry Pi Pico**](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html) :  C/C++ development with Raspberry Pi Pico and other RP2040-based microcontroller boards
 
 ## WIZnet Ethernet HAT & EVB
  [**WIZnet Ethernet HAT**](https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat)

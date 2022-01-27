@@ -1,8 +1,8 @@
 # WIZnet RP2040-HAT-MicroPython
 
 - [Overview](#overview)
-- [MicroPython Getting Started](#start)
-- [Directory Structure](#directory)
+- [MicroPython Getting Started][link-getting_started]
+
 
 
 
@@ -22,24 +22,6 @@ Please refer to [getting_stared.md][link-getting_started] for examples usage.
 
 ![][link-getting_image]
 
-<a name='directory'></a>
-
-# ✒️Directory Structure
-
-``` bash
-├─examples
-│  ├─HTTP
-│  │  ├─Webclient
-│  │  └─Webserver
-│  ├─Loopback
-│  ├─MQTT
-│  │  ├─Publish
-│  │  └─Subscribe
-│  └─PingTest
-└─libraries
-    ├─urequest
-    └─umqttsimple
-```
 
 
 
