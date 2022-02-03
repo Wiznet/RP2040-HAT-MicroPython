@@ -39,7 +39,7 @@ if(EXISTS "${AXTLS_LIB_DIR}/.git")
 	message("axtls cleaned")
 endif()
 
-execute_process(COMMAND make submodules WORKING_DIRECTORY ${MICROPY_DIR}/ports/rp2 )
+execute_process(COMMAND make submodules GIT_SUBMODULES=lib/axtls WORKING_DIRECTORY ${MICROPY_DIR}/ports/rp2 )
 execute_process(COMMAND ${GIT_EXECUTABLE} config core.filemode false )
 
 file(GLOB RP2040_HAT_MP_PATCHES 
