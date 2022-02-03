@@ -15,8 +15,9 @@ set(RP2040_HAT_MP_PATCH_DIR "patches")
 set(PICO_SDK_LIB_DIR "${MICROPY_DIR}/lib/pico-sdk")
 set(AXTLS_LIB_DIR "${MICROPY_DIR}/lib/axtls")
 set(GIT_EXECUTE "git")
+set(SUBMODULES_LIST "lib/axtls lib/pico-sdk lib/tinyusb")
 
-execute_process(COMMAND ${GIT_EXECUTE} -C ./libraries submodule update --init)
+execute_process(COMMAND ${GIT_EXECUTE} -C . submodule update --init)
 if(EXISTS "${MICROPY_DIR}/.git")
 	message("cleaning MicroPython Lib...")
 	execute_process(COMMAND ${GIT_EXECUTABLE} -C ${MICROPY_DIR} clean -fdx)
@@ -40,7 +41,7 @@ if(EXISTS "${AXTLS_LIB_DIR}/.git")
 	message("axtls cleaned")
 endif()
 
-execute_process(COMMAND make submodules GIT_SUBMODULES=lib/axtls WORKING_DIRECTORY ${MICROPY_DIR}/ports/rp2 )
+execute_process(COMMAND make submodules GIT_SUBMODULES=${SUBMODULES_LIST} WORKING_DIRECTORY ${MICROPY_DIR}/ports/rp2 )
 execute_process(COMMAND ${GIT_EXECUTABLE} config core.filemode false )
 
 file(GLOB RP2040_HAT_MP_PATCHES 
