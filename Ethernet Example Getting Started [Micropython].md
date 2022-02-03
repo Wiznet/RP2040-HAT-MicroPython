@@ -86,7 +86,7 @@ cd [user path]
 cd D:/RP2040
 
 /* Clone */
-git clone --recurse-submoduleshttps://github.com/Wiznet/RP2040-HAT-MicroPython.git
+git clone --recurse-submodules https://github.com/Wiznet/RP2040-HAT-MicroPython.git
 ```
 
 With Visual Studio Code, the library set as a submodule is automatically downloaded, so it doesn't matter whether the library set as a submodule is an empty directory or not, so refer to it.
