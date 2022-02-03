@@ -86,7 +86,7 @@ cd [user path]
 cd D:/RP2040
 
 /* Clone */
-git clone --recurse-submodules https://github.com/Wiznet/RP2040-HAT-MicroPython.git
+git clone https://github.com/Wiznet/RP2040-HAT-MicroPython.git
 ```
 
 With Visual Studio Code, the library set as a submodule is automatically downloaded, so it doesn't matter whether the library set as a submodule is an empty directory or not, so refer to it.
@@ -105,7 +105,7 @@ Below is a brief description of the patch file
  
 - Micropython
 ```cpp
-// First Method
+**// First Method**
     /* Change directory */
     // change to the library directory
     cd [user path]/RP2040-HAT-C/libraries
@@ -116,7 +116,7 @@ Below is a brief description of the patch file
     /* Patch*/
     git apply ../../patches/0001-Added-WIZnet-Chip-library.patch
     git apply ../../patches/0002-Added-AXTLSlibrary.patch
-//Second Method
+**//Second Method**
     cd [user path(=github source code setup path)]
     /* Patch */
     cmake CMakeLists.txt
