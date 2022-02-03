@@ -1,7 +1,7 @@
 #CMake minimum required version
 cmake_minimum_required(VERSION 3.12)
 set(PROJECT_NAME RP2040-HAT-MicroPython)
-PROJECT(${PROJECT_NAME} LANGUAGE Micropython VERSION 1.7)
+PROJECT(${PROJECT_NAME})
 MESSAGE(ProJect Name : ${CMAKE_PROJECT_NAME})
 # Pull in MicroPython (must be confirm before prokject begin)
 if(NOT DEFINED MICROPYTHON)
