@@ -8611,10 +8611,10 @@ index af02cd193..49fd67bed 100644
  extern const mp_obj_type_t machine_spi_type;
 diff --git a/ports/rp2/modnwwiznet5k.c b/ports/rp2/modnwwiznet5k.c
 new file mode 100644
-index 000000000..2a0e12f74
+index 000000000..4ca59e838
 --- /dev/null
 +++ b/ports/rp2/modnwwiznet5k.c
-@@ -0,0 +1,630 @@
+@@ -0,0 +1,621 @@
 +/*
 + * This file is part of the MicroPython project, http://micropython.org/
 + *
@@ -9035,17 +9035,16 @@ index 000000000..2a0e12f74
 +    ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 +
 +    // set some sensible default values; they are configurable using ifconfig method
-+   /* wiz_NetInfo netinfo = {
++    wiz_NetInfo netinfo = {
 +        .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
-+        .ip = {192, 168, 0, 18},
++        .ip = {192, 168, 100, 18},
 +        .sn = {255, 255, 255, 0},
-+        .gw = {192, 168, 0, 1},
++        .gw = {192, 168, 100, 1},
 +        .dns = {8, 8, 8, 8}, // Google public DNS
 +        .dhcp = NETINFO_STATIC,
 +    };
 +    wiznet5k_obj.netinfo = netinfo;
 +    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
-+*/
 +    // seems we need a small delay after init
 +    mp_hal_delay_ms(250);
 +
@@ -9057,20 +9056,12 @@ index 000000000..2a0e12f74
 +} 
 +STATIC mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
 +    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-+    wiz_NetInfo netinfo = {
-+        .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
-+        .ip = {192, 168, 100, 18},
-+        .sn = {255, 255, 255, 0},
-+        .gw = {192, 168, 100, 1},
-+        .dns = {8, 8, 8, 8}, // Google public DNS
-+        .dhcp = NETINFO_STATIC,
-+    };
++
 +    //wiz_NetInfo netinfo;
 +    if (n_args == 1) {
 +        return mp_const_none;
 +    } else {
 +        if (mp_obj_is_true(args[1])) {
-+            self->netinfo = netinfo;
 +            self->netinfo.dhcp = NETINFO_DHCP;
 +            wiznet5k_init((void *)self);
 +
@@ -9084,7 +9075,7 @@ index 000000000..2a0e12f74
 +            printf("netif changed  %d.%d.%d.%d\r\n",self->netinfo.ip[0],self->netinfo.ip[1],self->netinfo.ip[2],self->netinfo.ip[3]);
 +            return mp_obj_new_tuple(4, tuple); 
 +        } else {
-+            self->netinfo = netinfo;
++            //self->netinfo = netinfo;
 +            self->netinfo.dhcp = NETINFO_STATIC;
 +                       
 +            ctlnetwork(CN_SET_NETINFO, (void *)&self->netinfo);
