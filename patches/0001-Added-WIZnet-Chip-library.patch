@@ -1,5 +1,5 @@
 diff --git a/drivers/wiznet5k/ethernet/socket.c b/drivers/wiznet5k/ethernet/socket.c
-index 3ffda3a72..d96e993f6 100644
+index 3ffda3a72..777fe1df5 100644
 --- a/drivers/wiznet5k/ethernet/socket.c
 +++ b/drivers/wiznet5k/ethernet/socket.c
 @@ -53,9 +53,13 @@
@@ -197,7 +197,7 @@ index 3ffda3a72..d96e993f6 100644
  	setSn_CR(sn,Sn_CR_SEND);
  	/* wait to process the command... */
  	while(getSn_CR(sn));
-@@ -440,37 +513,52 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
+@@ -440,37 +513,54 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
        else if(tmp & Sn_IR_TIMEOUT)
        {
           setSn_IR(sn, Sn_IR_TIMEOUT);
@@ -249,7 +249,9 @@ index 3ffda3a72..d96e993f6 100644
     switch((mr=getSn_MR(sn)) & 0x0F)
     {
        case Sn_MR_UDP:
-+	  case Sn_MR_IPRAW:
++    #if ( _WIZCHIP_ != 5500 )
++	   case Sn_MR_IPRAW:
++    #endif
        case Sn_MR_MACRAW:
           break;
     #if ( _WIZCHIP_ < 5200 )         
@@ -257,7 +259,7 @@ index 3ffda3a72..d96e993f6 100644
        case Sn_MR_PPPoE:
           break;
     #endif
-@@ -489,7 +577,8 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -489,7 +579,8 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
           MICROPY_THREAD_YIELD();
        };
     }
@@ -267,7 +269,7 @@ index 3ffda3a72..d96e993f6 100644
  	switch (mr & 0x07)
  	{
  	   case Sn_MR_UDP :
-@@ -499,6 +588,22 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -499,6 +590,22 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			setSn_CR(sn,Sn_CR_RECV);
     			while(getSn_CR(sn));
     			// read peer's IP address, port number & packet length
@@ -290,7 +292,7 @@ index 3ffda3a72..d96e993f6 100644
      			addr[0] = head[0];
     			addr[1] = head[1];
     			addr[2] = head[2];
-@@ -507,10 +612,24 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -507,10 +614,24 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			*port = (*port << 8) + head[5];
     			sock_remained_size[sn] = head[6];
     			sock_remained_size[sn] = (sock_remained_size[sn] << 8) + head[7];
@@ -315,7 +317,7 @@ index 3ffda3a72..d96e993f6 100644
  			//
  			// Need to packet length check (default 1472)
  			//
-@@ -524,8 +643,13 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -524,8 +645,13 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			while(getSn_CR(sn));
     			// read peer's IP address, port number & packet length
      			sock_remained_size[sn] = head[0];
@@ -331,7 +333,7 @@ index 3ffda3a72..d96e993f6 100644
     			if(sock_remained_size[sn] > 1514) 
     			{
     			   WIZCHIP_EXPORT(close)(sn);
-@@ -549,7 +673,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -549,7 +675,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			addr[2] = head[2];
     			addr[3] = head[3];
     			sock_remained_size[sn] = head[4];
@@ -340,7 +342,7 @@ index 3ffda3a72..d96e993f6 100644
     			sock_pack_info[sn] = PACK_FIRST;
           }
  			//
-@@ -569,11 +693,23 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -569,11 +695,23 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
  	/* wait to process the command... */
  	while(getSn_CR(sn)) ;
  	sock_remained_size[sn] -= pack_len;
@@ -367,7 +369,7 @@ index 3ffda3a72..d96e993f6 100644
  }
  
  
-@@ -608,12 +744,15 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
+@@ -608,12 +746,15 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
        case CS_GET_INTERRUPT:
           *((uint8_t*)arg) = getSn_IR(sn);
           break;
@@ -384,7 +386,7 @@ index 3ffda3a72..d96e993f6 100644
        default:
           return SOCKERR_ARG;
     }
-@@ -660,7 +799,7 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -660,7 +801,7 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
           		}
              }
           break;
@@ -393,7 +395,7 @@ index 3ffda3a72..d96e993f6 100644
        case SO_KEEPALIVEAUTO:
           CHECK_SOCKMODE(Sn_MR_TCP);
           setSn_KPALVTR(sn,*(uint8_t*)arg);
-@@ -688,7 +827,8 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -688,7 +829,8 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
           *(uint8_t*) arg = getSn_TOS(sn);
           break;
        case SO_MSS:   
@@ -403,7 +405,7 @@ index 3ffda3a72..d96e993f6 100644
        case SO_DESTIP:
           getSn_DIPR(sn, (uint8_t*)arg);
           break;
-@@ -703,19 +843,25 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -703,19 +845,25 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
     #endif      
        case SO_SENDBUF:
           *(uint16_t*) arg = getSn_TX_FSR(sn);
@@ -2771,7 +2773,7 @@ index 000000000..8b7bee3ec
 +
 diff --git a/drivers/wiznet5k/ethernet/w5105/w5105.c b/drivers/wiznet5k/ethernet/w5105/w5105.c
 new file mode 100644
-index 000000000..b05b565e1
+index 000000000..49a56ae56
 --- /dev/null
 +++ b/drivers/wiznet5k/ethernet/w5105/w5105.c
 @@ -0,0 +1,485 @@
@@ -2821,11 +2823,11 @@ index 000000000..b05b565e1
 +
 +#define LPC_SSP0 (0)
 +static void Chip_SSP_ReadFrames_Blocking(int dummy, uint8_t *buf, uint32_t len) {
-+    WIZCHIP.IF.SPI._read_byte(buf, len);
++    WIZCHIP.IF.SPI._read_bytes(buf, len);
 +}
 +
 +static void Chip_SSP_WriteFrames_Blocking(int dummy, uint8_t *buf, uint32_t len) {
-+    WIZCHIP.IF.SPI._write_byte(buf, len);
++    WIZCHIP.IF.SPI._write_bytes(buf, len);
 +}
 +
 +
@@ -6601,7 +6603,7 @@ index 3107b1b71..014cd4445 100644
     WIZCHIP_CRITICAL_EXIT();
     return ret;
 diff --git a/drivers/wiznet5k/ethernet/wizchip_conf.c b/drivers/wiznet5k/ethernet/wizchip_conf.c
-index 3e54d2c90..a7e8ef1ee 100644
+index 3e54d2c90..9f6182f98 100644
 --- a/drivers/wiznet5k/ethernet/wizchip_conf.c
 +++ b/drivers/wiznet5k/ethernet/wizchip_conf.c
 @@ -5,8 +5,12 @@
@@ -6804,21 +6806,19 @@ index 3e54d2c90..a7e8ef1ee 100644
  }
  
  void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t))
-@@ -179,19 +254,38 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
+@@ -179,8 +254,8 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
     
     if(!spi_rb || !spi_wb)
     {
 -      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbytes;
 -      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebytes;
-+      WIZCHIP.IF.SPI._read_byte   = wizchip_spi_readbyte;
-+      WIZCHIP.IF.SPI._write_byte  = wizchip_spi_writebyte;
++      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbyte;
++      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebyte;
     }
     else
     {
--      WIZCHIP.IF.SPI._read_bytes   = spi_rb;
--      WIZCHIP.IF.SPI._write_bytes  = spi_wb;
-+      WIZCHIP.IF.SPI._read_byte   = spi_rb;
-+      WIZCHIP.IF.SPI._write_byte  = spi_wb;
+@@ -188,10 +263,29 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
+       WIZCHIP.IF.SPI._write_bytes  = spi_wb;
     }
  }
 +/*
@@ -7267,7 +7267,7 @@ index 3e54d2c90..a7e8ef1ee 100644
 +}
 \ No newline at end of file
 diff --git a/drivers/wiznet5k/ethernet/wizchip_conf.h b/drivers/wiznet5k/ethernet/wizchip_conf.h
-index 4a7a7bd69..2044625f9 100644
+index 4a7a7bd69..350b34f10 100644
 --- a/drivers/wiznet5k/ethernet/wizchip_conf.h
 +++ b/drivers/wiznet5k/ethernet/wizchip_conf.h
 @@ -5,6 +5,10 @@
@@ -7466,7 +7466,7 @@ index 4a7a7bd69..2044625f9 100644
      */
     struct _CS
     {
-@@ -177,19 +253,28 @@ typedef struct __WIZCHIP
+@@ -177,12 +253,19 @@ typedef struct __WIZCHIP
     {	 
        /**
         * For BUS interface IO
@@ -7489,12 +7489,10 @@ index 4a7a7bd69..2044625f9 100644
        /**
         * For SPI interface IO
         */
-       struct
+@@ -190,6 +273,8 @@ typedef struct __WIZCHIP
        {
--         void (*_read_bytes)  (uint8_t *buf, uint32_t len);
--         void (*_write_bytes) (const uint8_t *buf, uint32_t len);
-+         void (*_read_byte)  (uint8_t *buf, uint32_t len);
-+         void (*_write_byte) (const uint8_t *buf, uint32_t len);
+          void (*_read_bytes)  (uint8_t *buf, uint32_t len);
+          void (*_write_bytes) (const uint8_t *buf, uint32_t len);
 +       //  void    (*_read_burst)  (uint8_t* pBuf, uint16_t len);
 +       //  void    (*_write_burst) (uint8_t* pBuf, uint16_t len);
        }SPI;
