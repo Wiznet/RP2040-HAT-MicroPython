@@ -137,7 +137,7 @@ Link
 -->
 
 [link-thonny]: https://thonny.org/
-[link-http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/HTTP.png
+[link-http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/HTTP.png
 
 [link-wireshark]: https://www.wireshark.org/#download
 
