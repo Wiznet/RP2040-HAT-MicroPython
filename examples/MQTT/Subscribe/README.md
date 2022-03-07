@@ -30,7 +30,7 @@ To test the **MQTT Subscribe example**, minor settings shall be done in code.
 
 ![][link-thonny_mqtt]
 
-2. Create a new file by pressing the **New File** button. Copy the *umqttsimple* library code into it. You can access the *umqttsimple* library code in the following link: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/libraries/umqttsimple.py
+2. Create a new file by pressing the **New File** button. Copy the *umqttsimple* library code into it. You can access the *umqttsimple* library code in the following link: https://github.com/micropython/micropython-lib/blob/master/micropython/umqtt.simple/umqtt/simple.py
 
 ![][link-mqtt_lib]
 
@@ -147,10 +147,10 @@ Link
 
 
 
-[link-mqtt]:https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT.png
-[link-thonny_mqtt]:https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/images/MQTT/Thonny_conf_1.png
-[link-mqtt_lib]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT_lib.png
-[link-mqtt_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT_sub_1.png
-[link-mqtt_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT_sub_2.png
-[link-mqtt_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT_sub_3.png
-[link-mqtt_conf]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/MQTT/MQTT_conf.png
+[link-mqtt]:https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT.png
+[link-thonny_mqtt]:https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/Thonny_conf_1.png
+[link-mqtt_lib]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_lib.png
+[link-mqtt_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_1.png
+[link-mqtt_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_2.png
+[link-mqtt_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_3.png
+[link-mqtt_conf]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_conf.png
