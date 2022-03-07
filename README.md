@@ -33,6 +33,6 @@ Please refer to [getting_stared.md][link-getting_started] for examples usage.
 Link
 -->
 
-[link-wiznet_pico_]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/WIZnet_PICO_.jpg
-[link-getting_image]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/START/MicroPython_Thonny.png
+[link-wiznet_pico_]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/WIZnet_PICO_.jpg
+[link-getting_image]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/MicroPython_Thonny.png
 [link-getting_started]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/Ethernet%20Example%20Getting%20Started%20%5BMicropython%5D.md
