@@ -148,7 +148,7 @@ Link
 
 
 [link-mqtt]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT.png
-[link-thonny_mqtt]:https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/Thonny_conf_1.png
+[link-thonny_mqtt]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/Thonny_conf_1.png
 [link-mqtt_lib]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_lib.png
 [link-mqtt_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_1.png
 [link-mqtt_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_2.png
