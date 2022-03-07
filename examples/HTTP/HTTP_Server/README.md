@@ -143,13 +143,13 @@ Link
 
 
 
-[link-thonny_http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/Thonny_conf_1.png
+[link-thonny_http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/Thonny_conf_1.png
 
 
 
-[link-webserver_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webserver_1.png
-[link-webserver_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webserver_2.png
-[link-webserver_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webserver_3.png
-[link-webserver_4]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webserver_4.png
-[link-webserver_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/Webserver_6.jpg
+[link-webserver_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webserver_1.png
+[link-webserver_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webserver_2.png
+[link-webserver_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webserver_3.png
+[link-webserver_4]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webserver_4.png
+[link-webserver_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/Webserver_6.jpg
 
