@@ -149,7 +149,7 @@ Link
 [link-loopback]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback.png
 
 [link-loopback_server_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_server_1.png
-[link-loopback_server_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/static/images/Loopback/Loopback_server_2.png
+[link-loopback_server_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_server_2.png
 [link-loopback_server_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_server_3.png
 [link-loopback_server_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_server_4.png
 
