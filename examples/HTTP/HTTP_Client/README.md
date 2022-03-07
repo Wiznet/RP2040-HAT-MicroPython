@@ -32,7 +32,7 @@ To test the **Webclient example**, minor settings shall be done in code.
 
 ![][link-thonny_http]
 
-2. Create a new file by pressing the **New File** button. Copy the ***urequest.py*** library code into it. You can access the *urequest* library code in the following link - https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/libraries/urequest.py
+2. Create a new file by pressing the **New File** button. Copy the ***urequest.py*** library code into it. You can access the *urequest* library code in the following link - https://github.com/micropython/micropython-lib/blob/master/python-ecosys/urequests/urequests.py
 
 ![][link-request_lib]
 
@@ -105,8 +105,8 @@ Link
 
 
 
-[link-http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/HTTP.png
-[link-thonny_http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/Thonny_conf_1.png
-[link-request_lib]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webclient_request.png
-[link-webclient_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webclient_1.png
-[link-webclient_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/images/HTTP/webclient_2.png
+[link-http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/HTTP.png
+[link-thonny_http]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/Thonny_conf_1.png
+[link-request_lib]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_request.png
+[link-webclient_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_1.png
+[link-webclient_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_2.png
