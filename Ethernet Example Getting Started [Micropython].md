@@ -124,8 +124,8 @@ Below is a brief description of the patch file
 ```
 
 After that, you can visit the micropython link below and check it
-
-
+  
+[![DHCP and Patch](http://img.youtube.com/vi/86opIykPE-U/0.jpg)](https://youtu.be/86opIykPE-U)
 [https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code](https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code)
 
 :warning:**Notice**
