@@ -1,0 +1,267 @@
+diff --git a/crypto/aes.c b/crypto/aes.c
+index c260a2a..402d978 100644
+--- a/crypto/aes.c
++++ b/crypto/aes.c
+@@ -35,13 +35,25 @@
+  */
+ 
+ #include <string.h>
+-#include "os_port.h"
++#include "../ssl/os_port.h"
+ #include "crypto.h"
+ 
+ #define rot1(x) (((x) << 24) | ((x) >> 8))
+ #define rot2(x) (((x) << 16) | ((x) >> 16))
+ #define rot3(x) (((x) <<  8) | ((x) >> 24))
+ 
++#ifndef ntohl
++	#define ntohl(x) ((((x) & (uint32_t)0x000000ffUL) << 24) | \
++                     (((x) & (uint32_t)0x0000ff00UL) <<  8) | \
++                     (((x) & (uint32_t)0x00ff0000UL) >>  8) | \
++                     (((x) & (uint32_t)0xff000000UL) >> 24))
++#endif
++#ifndef htonl
++	#define htonl(x) ((((x) & (uint32_t)0x000000ffUL) << 24) | \
++                     (((x) & (uint32_t)0x0000ff00UL) <<  8) | \
++                     (((x) & (uint32_t)0x00ff0000UL) >>  8) | \
++                     (((x) & (uint32_t)0xff000000UL) >> 24))
++#endif
+ /* 
+  * This cute trick does 4 'mul by two' at once.  Stolen from
+  * Dr B. R. Gladman <brg@gladman.uk.net> but I'm sure the u-(u>>7) is
+
+diff --git a/crypto/crypto_misc.c b/crypto/crypto_misc.c
+index bba5a20..4c160a4 100644
+--- a/crypto/crypto_misc.c
++++ b/crypto/crypto_misc.c
+@@ -130,8 +130,9 @@ EXP_FUNC void STDCALL RNG_initialize()
+     }
+ #elif !defined(__ets__)
+     /* start of with a stack to copy across */
+-    int i = rand();
+-    memcpy(entropy_pool, &i, ENTROPY_POOL_SIZE);
++    uint8_t i = rand();
++    uint8_t *pi = &i;
++    memcpy(entropy_pool, pi, ENTROPY_POOL_SIZE);
+     #ifdef __ANDROID__
+     /* Later android releases have rand_r(), but classic ones, e.g.
+        android-3 (1.5) have jrand48(). */
+
+diff --git a/ssl/asn1.c b/ssl/asn1.c
+index ed28eb3..bf88f72 100644
+--- a/ssl/asn1.c
++++ b/ssl/asn1.c
+@@ -74,7 +74,7 @@ static const uint8_t sig_sha512[] =
+ {
+     0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03
+ };
+-
++#ifdef CONFIG_SSL_CERT_VERIFICATION
+ static const uint8_t sig_subject_alt_name[] =
+ {
+     0x55, 0x1d, 0x11
+@@ -89,7 +89,7 @@ static const uint8_t sig_key_usage[] =
+ {
+     0x55, 0x1d, 0x0f
+ };
+-
++#endif
+ /* CN, O, OU, L, C, ST */
+ static const uint8_t g_dn_types[] = { 3, 10, 11, 7, 6, 8 };
+ 
+@@ -389,7 +389,7 @@ static int asn1_get_utc_time(const uint8_t *buf, int *offset, time_t *t)
+ /**
+  * Get the version type of a certificate
+  */
+-int asn1_version(const uint8_t *cert, int *offset, int *val)
++int asn1_version(const uint8_t *cert, int *offset, int32_t *val)
+ {
+     (*offset) += 2;        /* get past explicit tag */
+     return asn1_get_int(cert, offset, val);
+
+diff --git a/ssl/crypto_misc.h b/ssl/crypto_misc.h
+index 21b59cb..2ec5203 100644
+--- a/ssl/crypto_misc.h
++++ b/ssl/crypto_misc.h
+@@ -169,7 +169,7 @@ int asn1_get_big_int(const uint8_t *buf, int *offset, uint8_t **object);
+ int asn1_get_int(const uint8_t *buf, int *offset, int32_t *val);
+ int asn1_get_bool(const uint8_t *buf, int *offset, bool *val);
+ int asn1_get_bit_string_as_int(const uint8_t *buf, int *offset, uint32_t *val);
+-int asn1_version(const uint8_t *cert, int *offset, int *val);
++int asn1_version(const uint8_t *cert, int *offset, int32_t *val);
+ int asn1_validity(const uint8_t *cert, int *offset, X509_CTX *x509_ctx);
+ int asn1_name(const uint8_t *cert, int *offset, char *dn[]);
+ int asn1_public_key(const uint8_t *cert, int *offset, X509_CTX *x509_ctx);
+diff --git a/ssl/os_port.c b/ssl/os_port.c
+index e69de29..a0dd932 100644
+--- a/ssl/os_port.c
++++ b/ssl/os_port.c
+@@ -0,0 +1,107 @@
++ /* Copyright (c) 2007-2016, Cameron Rich
++ * 
++ * All rights reserved.
++ * 
++ * Redistribution and use in source and binary forms, with or without 
++ * modification, are permitted provided that the following conditions are met:
++ *
++ * * Redistributions of source code must retain the above copyright notice, 
++ *   this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright notice, 
++ *   this list of conditions and the following disclaimer in the documentation 
++ *   and/or other materials provided with the distribution.
++ * * Neither the name of the axTLS project nor the names of its contributors 
++ *   may be used to endorse or promote products derived from this software 
++ *   without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
++ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
++ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
++ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
++ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/**
++ * @file os_port.c
++ *
++ * OS specific functions.
++ */
++#include <time.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <stdarg.h>
++#include "os_port.h"
++#include "crypto.h"
++#include "shared/timeutils/timeutils.h"
++#include "extmod/utime_mphal.h"
++#include "hardware/rtc.h"
++
++#ifdef WIN32
++/**
++ * gettimeofday() not in Win32 
++ */
++EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone)
++{       
++#if defined(_WIN32_WCE)
++    t->tv_sec = time(NULL);
++    t->tv_usec = 0;                         /* 1sec precision only */ 
++#else
++    struct _timeb timebuffer;
++    _ftime(&timebuffer);
++    t->tv_sec = (long)timebuffer.time;
++    t->tv_usec = 1000 * timebuffer.millitm; /* 1ms precision */
++#endif
++}
++
++/**
++ * strcasecmp() not in Win32
++ */
++EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2)
++{
++    while (tolower(*s1) == tolower(*s2++))
++    {
++        if (*s1++ == '\0')
++        {
++            return 0;
++        }
++    }
++
++    return *(unsigned char *)s1 - *(unsigned char *)(s2 - 1);
++}
++
++
++EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size)
++{
++    HKEY hKey;
++    unsigned long datatype;
++    unsigned long bufferlength = buf_size;
++
++    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
++            TEXT("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"),
++                        0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
++        return -1;
++
++    RegQueryValueEx(hKey, "Domain", NULL, &datatype, buf, &bufferlength);
++    RegCloseKey(hKey);
++    return 0; 
++}
++#else
++EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone)
++{       
++   datetime_t t1;
++   rtc_get_datetime(&t1);
++   t->tv_sec = t1.sec;
++   t->tv_usec = 0;              
++
++
++}
++
++
++#endif
++
+
+diff --git a/ssl/tls1.c b/ssl/tls1.c
+index 8c21825..52ec7c3 100755
+--- a/ssl/tls1.c
++++ b/ssl/tls1.c
+@@ -2010,11 +2010,11 @@ int process_certificate(SSL *ssl, X509_CTX **x509_ctx)
+     int cert_size, offset = 5, offset_start;
+     int total_cert_len = (buf[offset]<<8) + buf[offset+1];
+     int is_client = IS_SET_SSL_FLAG(SSL_IS_CLIENT);
+-    X509_CTX *chain = 0;
++    //X509_CTX *chain = 0;
+     X509_CTX **certs = 0;
+     int *cert_used = 0;
+     int num_certs = 0;
+-    int i = 0;
++    //int i = 0;
+     offset += 2;
+ 
+     PARANOIA_CHECK(pkt_size, total_cert_len + offset);
+@@ -2066,7 +2066,7 @@ int process_certificate(SSL *ssl, X509_CTX **x509_ctx)
+ 
+     // third pass - link certs together, assume server cert is the first
+     *x509_ctx = certs[0];
+-    chain = certs[0];
++    //chain = certs[0];
+     cert_used[0] = 1;
+ 
+ #ifndef CONFIG_SSL_SKELETON_MODE
+diff --git a/ssl/tls1_svr.c b/ssl/tls1_svr.c
+index 8f947ed..6f079c5 100644
+--- a/ssl/tls1_svr.c
++++ b/ssl/tls1_svr.c
+@@ -36,12 +36,12 @@
+ #ifdef CONFIG_SSL_ENABLE_SERVER
+ 
+ static const uint8_t g_hello_done[] = { HS_SERVER_HELLO_DONE, 0, 0, 0 };
+-static const uint8_t g_asn1_sha256[] = 
++/*static const uint8_t g_asn1_sha256[] = 
+ { 
+     0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 
+     0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20
+ };
+-
++*/
+ static int process_client_hello(SSL *ssl);
+ static int send_server_hello_sequence(SSL *ssl);
+ static int send_server_hello(SSL *ssl);
+
+diff --git a/ssl/x509.c b/ssl/x509.c
+index b36f205..7e67d8e 100644
+--- a/ssl/x509.c
++++ b/ssl/x509.c
+@@ -58,7 +58,7 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
+ {
+     int begin_tbs, end_tbs;
+     int ret = X509_NOT_OK, offset = 0, cert_size = 0;
+-    int version = 0;
++    int32_t version = 0;
+     X509_CTX *x509_ctx;
+ #ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
+     BI_CTX *bi_ctx;
