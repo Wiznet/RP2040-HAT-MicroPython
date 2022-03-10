@@ -1,16 +1,17 @@
 diff --git a/drivers/wiznet5k/ethernet/socket.c b/drivers/wiznet5k/ethernet/socket.c
-index 3ffda3a72..d96e993f6 100644
+index 3ffda3a72..43ac18292 100644
 --- a/drivers/wiznet5k/ethernet/socket.c
 +++ b/drivers/wiznet5k/ethernet/socket.c
-@@ -53,9 +53,13 @@
+@@ -53,20 +53,32 @@
  #include <string.h>
  
  #include "py/mpthread.h"
 +#include "py/stream.h"
 +#include "py/runtime.h"
  #include "socket.h"
--
+ 
 -#define SOCK_ANY_PORT_NUM  0xC000;
++#include "py/mphal.h"
 +#define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 +//M20150401 : Typing Error
 +//#define SOCK_ANY_PORT_NUM  0xC000;
@@ -18,7 +19,13 @@ index 3ffda3a72..d96e993f6 100644
  
  static uint16_t sock_any_port = SOCK_ANY_PORT_NUM;
  static uint16_t sock_io_mode = 0;
-@@ -67,6 +71,11 @@ static uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
+ static uint16_t sock_is_sending = 0;
+ static uint16_t sock_remained_size[_WIZCHIP_SOCK_NUM_] = {0,0,};
+-static uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
++//static uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
++uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
+ 
+ #if _WIZCHIP_ == 5200
     static uint16_t sock_next_rd[_WIZCHIP_SOCK_NUM_] ={0,};
  #endif
  
@@ -30,7 +37,69 @@ index 3ffda3a72..d96e993f6 100644
  #define CHECK_SOCKNUM()   \
     do{                    \
        if(sn > _WIZCHIP_SOCK_NUM_) return SOCKERR_SOCKNUM;   \
-@@ -159,7 +168,9 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+@@ -107,6 +119,17 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+ 	switch(protocol)
+ 	{
+       case Sn_MR_TCP :
++         {
++            //M20150601 : Fixed the warning - taddr will never be NULL
++		    /*
++            uint8_t taddr[4];
++            getSIPR(taddr);
++            */
++            uint32_t taddr;
++            getSIPR((uint8_t*)&taddr);
++            if(taddr == 0) return SOCKERR_SOCKINIT;
++	    break;
++         }
+       case Sn_MR_UDP :
+       case Sn_MR_MACRAW :
+          break;
+@@ -118,7 +141,9 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+       default :
+          return SOCKERR_SOCKMODE;
+ 	}
+-	if((flag & 0x06) != 0) return SOCKERR_SOCKFLAG;
++	//M20150601 : For SF_TCP_ALIGN & W5300
++	//if((flag & 0x06) != 0) return SOCKERR_SOCKFLAG;
++	if((flag & 0x04) != 0) return SOCKERR_SOCKFLAG;
+ #if _WIZCHIP_ == 5200
+    if(flag & 0x10) return SOCKERR_SOCKFLAG;
+ #endif
+@@ -128,7 +153,12 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+    	switch(protocol)
+    	{
+    	   case Sn_MR_TCP:
+-   	      if((flag & (SF_TCP_NODELAY|SF_IO_NONBLOCK))==0) return SOCKERR_SOCKFLAG;
++   		  //M20150601 :  For SF_TCP_ALIGN & W5300
++          #if _WIZCHIP_ == 5300
++   		     if((flag & (SF_TCP_NODELAY|SF_IO_NONBLOCK|SF_TCP_ALIGN))==0) return SOCKERR_SOCKFLAG;
++          #else
++   		     if((flag & (SF_TCP_NODELAY|SF_IO_NONBLOCK))==0) return SOCKERR_SOCKFLAG;
++          #endif
+    	      break;
+    	   case Sn_MR_UDP:
+    	      if(flag & SF_IGMP_VER2)
+@@ -147,7 +177,12 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+    	}
+    }
+ 	WIZCHIP_EXPORT(close)(sn);
+-	setSn_MR(sn, (protocol | (flag & 0xF0)));
++	//M20150601
++	#if _WIZCHIP_ == 5300
++	   setSn_MR(sn, ((uint16_t)(protocol | (flag & 0xF0))) | (((uint16_t)(flag & 0x02)) << 7) );
++    #else
++	   setSn_MR(sn, (protocol | (flag & 0xF0)));
++    #endif
+ 	if(!port)
+ 	{
+ 	   port = sock_any_port++;
+@@ -156,10 +191,14 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+    setSn_PORT(sn,port);	
+    setSn_CR(sn,Sn_CR_OPEN);
+    while(getSn_CR(sn));
++   //A20150401 : For release the previous sock_io_mode
++   sock_io_mode &= ~(1 <<sn);
     sock_io_mode |= ((flag & SF_IO_NONBLOCK) << sn);
     sock_is_sending &= ~(1<<sn);
     sock_remained_size[sn] = 0;
@@ -41,7 +110,7 @@ index 3ffda3a72..d96e993f6 100644
     while(getSn_SR(sn) == SOCK_CLOSED);
     return (int8_t)sn;
  }	   
-@@ -167,12 +178,39 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
+@@ -167,12 +206,39 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
  int8_t WIZCHIP_EXPORT(close)(uint8_t sn)
  {
  	CHECK_SOCKNUM();
@@ -82,7 +151,21 @@ index 3ffda3a72..d96e993f6 100644
  	sock_is_sending &= ~(1<<sn);
  	sock_remained_size[sn] = 0;
  	sock_pack_info[sn] = 0;
-@@ -286,7 +324,9 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
+@@ -189,12 +255,9 @@ int8_t WIZCHIP_EXPORT(listen)(uint8_t sn)
+ 	while(getSn_CR(sn));
+    while(getSn_SR(sn) != SOCK_LISTEN)
+    {
+-      if(getSn_CR(sn) == SOCK_CLOSED)
+-      {
+-         WIZCHIP_EXPORT(close)(sn);
++       	WIZCHIP_EXPORT(close)(sn);
+          return SOCKERR_SOCKCLOSED;
+       }
+-   }
+    return SOCK_OK;
+ }
+ 
+@@ -286,12 +349,14 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
        if(tmp & Sn_IR_SENDOK)
        {
           setSn_IR(sn, Sn_IR_SENDOK);
@@ -93,7 +176,13 @@ index 3ffda3a72..d96e993f6 100644
              if(getSn_TX_RD(sn) != sock_next_rd[sn])
              {
                 setSn_CR(sn,Sn_CR_SEND);
-@@ -326,7 +366,9 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
+                while(getSn_CR(sn));
+-               return SOCKERR_BUSY;
++               return SOCK_BUSY;
+             }
+          #endif
+          sock_is_sending &= ~(1<<sn);         
+@@ -326,7 +391,9 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
     /* wait to process the command... */
     while(getSn_CR(sn));
     sock_is_sending |= (1 << sn);
@@ -104,7 +193,7 @@ index 3ffda3a72..d96e993f6 100644
  }
  
  
-@@ -334,12 +376,26 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
+@@ -334,12 +401,26 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
  {
     uint8_t  tmp = 0;
     uint16_t recvsize = 0;
@@ -131,11 +220,70 @@ index 3ffda3a72..d96e993f6 100644
     while(1)
     {
        recvsize = getSn_RX_RSR(sn);
-@@ -374,13 +430,15 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
+@@ -357,8 +438,8 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
+                //  formed an orderly shutdown, recv() shall return 0".
+                // TODO this return value clashes with SOCK_BUSY in non-blocking mode.
+                WIZCHIP_EXPORT(close)(sn);
+-               return 0;
+-            }
++                  return SOCKERR_SOCKSTATUS;
++               }
+          }
+          else
+          {
+@@ -370,17 +451,62 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
+       if(recvsize != 0) break;
+       MICROPY_THREAD_YIELD();
+    };
+-   if(recvsize < len) len = recvsize;
++//A20150601 : For integrating with W5300
++#if _WIZCHIP_ == 5300
++   if((sock_remained_size[sn] == 0) || (getSn_MR(sn) & Sn_MR_ALIGN))
++   {
++      mr = getMR();
++      if((getSn_MR(sn) & Sn_MR_ALIGN)==0)
++      {
++         wiz_recv_data(sn,head,2);
++         if(mr & MR_FS)
++            recvsize = (((uint16_t)head[1]) << 8) | ((uint16_t)head[0]);
++         else
++            recvsize = (((uint16_t)head[0]) << 8) | ((uint16_t)head[1]);
++         sock_pack_info[sn] = PACK_FIRST;
++      }
++      sock_remained_size[sn] = recvsize;
++   }
++   if(len > sock_remained_size[sn]) len = sock_remained_size[sn];
++   recvsize = len;   
++   if(sock_pack_info[sn] & PACK_FIFOBYTE)
++   {
++      *buf = sock_remained_byte[sn];
++      buf++;
++      sock_pack_info[sn] &= ~(PACK_FIFOBYTE);
++      recvsize -= 1;
++      sock_remained_size[sn] -= 1;
++   }
++   if(recvsize != 0)
++   {
++      wiz_recv_data(sn, buf, recvsize);
++      setSn_CR(sn,Sn_CR_RECV);
++      while(getSn_CR(sn));
++   }
++   sock_remained_size[sn] -= recvsize;
++   if(sock_remained_size[sn] != 0)
++   {
++      sock_pack_info[sn] |= PACK_REMAINED;
++      if(recvsize & 0x1) sock_pack_info[sn] |= PACK_FIFOBYTE;
++   }
++   else sock_pack_info[sn] = PACK_COMPLETED;
++   if(getSn_MR(sn) & Sn_MR_ALIGN) sock_remained_size[sn] = 0;
++   //len = recvsize;
++#else   
++   if(recvsize < len) len = recvsize;   
     wiz_recv_data(sn, buf, len);
     setSn_CR(sn,Sn_CR_RECV);
     while(getSn_CR(sn));
 -   return len;
++#endif
 +   return (int32_t)len;
  }
  
@@ -148,7 +296,7 @@ index 3ffda3a72..d96e993f6 100644
     CHECK_SOCKNUM();
     switch(getSn_MR(sn) & 0x0F)
     {
-@@ -393,14 +451,17 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
+@@ -393,18 +519,23 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
     CHECK_SOCKDATA();
     //M20140501 : For avoiding fatal error on memory align mismatched
     //if(*((uint32_t*)addr) == 0) return SOCKERR_IPINVALID;
@@ -163,20 +311,34 @@ index 3ffda3a72..d96e993f6 100644
 -      if (taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
 -   }
 +   //}
-+   //
+    //
+-   if(port == 0)               return SOCKERR_PORTZERO;
 +   //if(*((uint32_t*)addr) == 0) return SOCKERR_IPINVALID;
 +   if((taddr == 0) && ((getSn_MR(sn)&Sn_MR_MACRAW) != Sn_MR_MACRAW)) return SOCKERR_IPINVALID;
 +   if((port  == 0) && ((getSn_MR(sn)&Sn_MR_MACRAW) != Sn_MR_MACRAW)) return SOCKERR_PORTZERO;
-    //
-    if(port == 0)               return SOCKERR_PORTZERO;
     tmp = getSn_SR(sn);
-@@ -418,12 +479,24 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
-       if(len <= freesize) break;
+-   if(tmp != SOCK_MACRAW && tmp != SOCK_UDP) return SOCKERR_SOCKSTATUS;
++//#if ( _WIZCHIP_ < 5200 )
++   if((tmp != SOCK_MACRAW) && (tmp != SOCK_UDP) && (tmp != SOCK_IPRAW)) return SOCKERR_SOCKSTATUS;
++//#else
++//   if(tmp != SOCK_MACRAW && tmp != SOCK_UDP) return SOCKERR_SOCKSTATUS;
++//#endif
+       
+    setSn_DIPR(sn,addr);
+    setSn_DPORT(sn,port);      
+@@ -412,6 +543,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
+    if (len > freesize) len = freesize; // check size not to exceed MAX size.
+    while(1)
+    {
++      mp_hal_delay_ms(500);
+       freesize = getSn_TX_FSR(sn);
+       if(getSn_SR(sn) == SOCK_CLOSED) return SOCKERR_SOCKCLOSED;
+       if( (sock_io_mode & (1<<sn)) && (len > freesize) ) return SOCK_BUSY;
+@@ -419,11 +551,21 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
        MICROPY_THREAD_YIELD();
     };
-+      
  	wiz_send_data(sn, buf, len);
- 
+-
 -   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
 -      setSUBR(wizchip_getsubn());
 +   #if _WIZCHIP_ < 5500   //M20150401 : for WIZCHIP Errata #4, #5 (ARP errata)
@@ -197,7 +359,7 @@ index 3ffda3a72..d96e993f6 100644
  	setSn_CR(sn,Sn_CR_SEND);
  	/* wait to process the command... */
  	while(getSn_CR(sn));
-@@ -440,37 +513,52 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
+@@ -440,37 +582,52 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
        else if(tmp & Sn_IR_TIMEOUT)
        {
           setSn_IR(sn, Sn_IR_TIMEOUT);
@@ -257,7 +419,7 @@ index 3ffda3a72..d96e993f6 100644
        case Sn_MR_PPPoE:
           break;
     #endif
-@@ -489,7 +577,8 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -489,7 +646,8 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
           MICROPY_THREAD_YIELD();
        };
     }
@@ -267,7 +429,7 @@ index 3ffda3a72..d96e993f6 100644
  	switch (mr & 0x07)
  	{
  	   case Sn_MR_UDP :
-@@ -499,6 +588,22 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -499,6 +657,22 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			setSn_CR(sn,Sn_CR_RECV);
     			while(getSn_CR(sn));
     			// read peer's IP address, port number & packet length
@@ -290,7 +452,7 @@ index 3ffda3a72..d96e993f6 100644
      			addr[0] = head[0];
     			addr[1] = head[1];
     			addr[2] = head[2];
-@@ -507,10 +612,24 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -507,10 +681,24 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			*port = (*port << 8) + head[5];
     			sock_remained_size[sn] = head[6];
     			sock_remained_size[sn] = (sock_remained_size[sn] << 8) + head[7];
@@ -315,7 +477,7 @@ index 3ffda3a72..d96e993f6 100644
  			//
  			// Need to packet length check (default 1472)
  			//
-@@ -524,8 +643,13 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -524,8 +712,13 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			while(getSn_CR(sn));
     			// read peer's IP address, port number & packet length
      			sock_remained_size[sn] = head[0];
@@ -331,7 +493,16 @@ index 3ffda3a72..d96e993f6 100644
     			if(sock_remained_size[sn] > 1514) 
     			{
     			   WIZCHIP_EXPORT(close)(sn);
-@@ -549,7 +673,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -537,7 +730,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+ 			else pack_len = sock_remained_size[sn];
+ 			wiz_recv_data(sn,buf,pack_len);
+ 		   break;
+-   #if ( _WIZCHIP_ < 5200 )
++   //#if ( _WIZCHIP_ < 5200 )
+ 		case Sn_MR_IPRAW:
+ 		   if(sock_remained_size[sn] == 0)
+ 		   {
+@@ -549,7 +742,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			addr[2] = head[2];
     			addr[3] = head[3];
     			sock_remained_size[sn] = head[4];
@@ -340,7 +511,16 @@ index 3ffda3a72..d96e993f6 100644
     			sock_pack_info[sn] = PACK_FIRST;
           }
  			//
-@@ -569,11 +693,23 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+@@ -559,7 +752,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
+ 			else pack_len = sock_remained_size[sn];
+    		wiz_recv_data(sn, buf, pack_len); // data copy.
+ 			break;
+-   #endif
++   //#endif
+       default:
+          wiz_recv_ignore(sn, pack_len); // data copy.
+          sock_remained_size[sn] = pack_len;
+@@ -569,11 +762,23 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
  	/* wait to process the command... */
  	while(getSn_CR(sn)) ;
  	sock_remained_size[sn] -= pack_len;
@@ -367,7 +547,7 @@ index 3ffda3a72..d96e993f6 100644
  }
  
  
-@@ -608,12 +744,15 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
+@@ -608,12 +813,15 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
        case CS_GET_INTERRUPT:
           *((uint8_t*)arg) = getSn_IR(sn);
           break;
@@ -384,7 +564,7 @@ index 3ffda3a72..d96e993f6 100644
        default:
           return SOCKERR_ARG;
     }
-@@ -660,7 +799,7 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -660,7 +868,7 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
           		}
              }
           break;
@@ -393,7 +573,7 @@ index 3ffda3a72..d96e993f6 100644
        case SO_KEEPALIVEAUTO:
           CHECK_SOCKMODE(Sn_MR_TCP);
           setSn_KPALVTR(sn,*(uint8_t*)arg);
-@@ -688,7 +827,8 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -688,7 +896,8 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
           *(uint8_t*) arg = getSn_TOS(sn);
           break;
        case SO_MSS:   
@@ -403,7 +583,7 @@ index 3ffda3a72..d96e993f6 100644
        case SO_DESTIP:
           getSn_DIPR(sn, (uint8_t*)arg);
           break;
-@@ -703,19 +843,25 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
+@@ -703,19 +912,25 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
     #endif      
        case SO_SENDBUF:
           *(uint16_t*) arg = getSn_TX_FSR(sn);
@@ -2771,7 +2951,7 @@ index 000000000..8b7bee3ec
 +
 diff --git a/drivers/wiznet5k/ethernet/w5105/w5105.c b/drivers/wiznet5k/ethernet/w5105/w5105.c
 new file mode 100644
-index 000000000..b05b565e1
+index 000000000..49a56ae56
 --- /dev/null
 +++ b/drivers/wiznet5k/ethernet/w5105/w5105.c
 @@ -0,0 +1,485 @@
@@ -2821,11 +3001,11 @@ index 000000000..b05b565e1
 +
 +#define LPC_SSP0 (0)
 +static void Chip_SSP_ReadFrames_Blocking(int dummy, uint8_t *buf, uint32_t len) {
-+    WIZCHIP.IF.SPI._read_byte(buf, len);
++    WIZCHIP.IF.SPI._read_bytes(buf, len);
 +}
 +
 +static void Chip_SSP_WriteFrames_Blocking(int dummy, uint8_t *buf, uint32_t len) {
-+    WIZCHIP.IF.SPI._write_byte(buf, len);
++    WIZCHIP.IF.SPI._write_bytes(buf, len);
 +}
 +
 +
@@ -6600,8 +6780,30 @@ index 3107b1b71..014cd4445 100644
     WIZCHIP.CS._deselect();
     WIZCHIP_CRITICAL_EXIT();
     return ret;
+diff --git a/drivers/wiznet5k/ethernet/w5500/w5500.h b/drivers/wiznet5k/ethernet/w5500/w5500.h
+index c2afb180e..faab9e95a 100644
+--- a/drivers/wiznet5k/ethernet/w5500/w5500.h
++++ b/drivers/wiznet5k/ethernet/w5500/w5500.h
+@@ -834,7 +834,7 @@
+  */
+ #define Sn_MR_MACRAW                 0x04
+ 
+-//#define Sn_MR_IPRAW                  0x03     /**< IP LAYER RAW SOCK */
++#define Sn_MR_IPRAW                  0x03     /**< IP LAYER RAW SOCK */
+ 
+ /**
+  * @brief UDP
+@@ -1124,7 +1124,7 @@
+  */
+ #define SOCK_UDP                     0x22
+ 
+-//#define SOCK_IPRAW                   0x32     /**< IP raw mode socket */
++#define SOCK_IPRAW                   0x32     /**< IP raw mode socket */
+ 
+ /**
+  * @brief MAC raw mode socket
 diff --git a/drivers/wiznet5k/ethernet/wizchip_conf.c b/drivers/wiznet5k/ethernet/wizchip_conf.c
-index 3e54d2c90..a7e8ef1ee 100644
+index 3e54d2c90..9e6633671 100644
 --- a/drivers/wiznet5k/ethernet/wizchip_conf.c
 +++ b/drivers/wiznet5k/ethernet/wizchip_conf.c
 @@ -5,8 +5,12 @@
@@ -6618,8 +6820,17 @@ index 3e54d2c90..a7e8ef1ee 100644
  //            Issued by Mathias ClauBen.
  //!           uint32_t type converts into ptrdiff_t first. And then recoverting it into uint8_t*
  //!           For remove the warning when pointer type size is not 32bit.
-@@ -49,66 +53,101 @@
+@@ -47,68 +51,110 @@
+ //A20140501 : for use the type - ptrdiff_t
+ #include <stddef.h>
  //
++#include "py/objlist.h"
++#include "py/runtime.h"
++#include "py/stream.h"
++#include "py/mperrno.h"
++#include "py/mphal.h"
++
++#define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
  
  #include "wizchip_conf.h"
 -#include "socket.h"
@@ -6734,7 +6945,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  _WIZCHIP  WIZCHIP =
        {
        .id                  = _WIZCHIP_ID_,
-@@ -122,10 +161,32 @@ _WIZCHIP  WIZCHIP =
+@@ -122,10 +168,32 @@ _WIZCHIP  WIZCHIP =
  //    .IF.SPI._read_byte   = wizchip_spi_readbyte,
  //    .IF.SPI._write_byte  = wizchip_spi_writebyte
        };
@@ -6770,7 +6981,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  static uint8_t    _DNS_[4];      // DNS server ip address
  static dhcp_mode  _DHCP_;        // DHCP mode
  
-@@ -157,10 +218,13 @@ void reg_wizchip_cs_cbfunc(void(*cs_sel)(void), void(*cs_desel)(void))
+@@ -157,10 +225,13 @@ void reg_wizchip_cs_cbfunc(void(*cs_sel)(void), void(*cs_desel)(void))
     }
  }
  
@@ -6786,7 +6997,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     if(!bus_rb || !bus_wb)
     {
        WIZCHIP.IF.BUS._read_byte   = wizchip_bus_readbyte;
-@@ -171,6 +235,17 @@ void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint
+@@ -171,6 +242,17 @@ void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint
        WIZCHIP.IF.BUS._read_byte   = bus_rb;
        WIZCHIP.IF.BUS._write_byte  = bus_wb;
     }
@@ -6804,21 +7015,19 @@ index 3e54d2c90..a7e8ef1ee 100644
  }
  
  void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t))
-@@ -179,19 +254,38 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
+@@ -179,8 +261,8 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
     
     if(!spi_rb || !spi_wb)
     {
 -      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbytes;
 -      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebytes;
-+      WIZCHIP.IF.SPI._read_byte   = wizchip_spi_readbyte;
-+      WIZCHIP.IF.SPI._write_byte  = wizchip_spi_writebyte;
++      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbyte;
++      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebyte;
     }
     else
     {
--      WIZCHIP.IF.SPI._read_bytes   = spi_rb;
--      WIZCHIP.IF.SPI._write_bytes  = spi_wb;
-+      WIZCHIP.IF.SPI._read_byte   = spi_rb;
-+      WIZCHIP.IF.SPI._write_byte  = spi_wb;
+@@ -188,10 +270,29 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
+       WIZCHIP.IF.SPI._write_bytes  = spi_wb;
     }
  }
 +/*
@@ -6847,7 +7056,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     uint8_t* ptmp[2] = {0,0};
     switch(cwtype)
     {
-@@ -217,7 +311,9 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
+@@ -217,7 +318,9 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
        case CW_GET_INTRMASK:
           *((intr_kind*)arg) = wizchip_getinterruptmask();
           break;
@@ -6858,7 +7067,7 @@ index 3e54d2c90..a7e8ef1ee 100644
        case CW_SET_INTRTIME:
           setINTLEVEL(*(uint16_t*)arg);
           break;
-@@ -231,9 +327,10 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
+@@ -231,9 +334,10 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
           ((uint8_t*)arg)[2] = WIZCHIP.id[2];
           ((uint8_t*)arg)[3] = WIZCHIP.id[3];
           ((uint8_t*)arg)[4] = WIZCHIP.id[4];
@@ -6871,7 +7080,7 @@ index 3e54d2c90..a7e8ef1ee 100644
        case CW_RESET_PHY:
           wizphy_reset();
           break;
-@@ -248,6 +345,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
+@@ -248,6 +352,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
        case CW_SET_PHYPOWMODE:
           return wizphy_setphypmode(*(uint8_t*)arg);
     #endif
@@ -6879,7 +7088,7 @@ index 3e54d2c90..a7e8ef1ee 100644
        case CW_GET_PHYPOWMODE:
           tmp = wizphy_getphypmode();
           if((int8_t)tmp == -1) return -1;
-@@ -258,6 +356,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
+@@ -258,6 +363,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
           if((int8_t)tmp == -1) return -1;
           *(uint8_t*)arg = tmp;
           break;
@@ -6887,7 +7096,7 @@ index 3e54d2c90..a7e8ef1ee 100644
        default:
           return -1;
     }
-@@ -297,10 +396,21 @@ void wizchip_sw_reset(void)
+@@ -297,10 +403,21 @@ void wizchip_sw_reset(void)
  {
     uint8_t gw[4], sn[4], sip[4];
     uint8_t mac[6];
@@ -6909,7 +7118,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     setSHAR(mac);
     setGAR(gw);
     setSUBR(sn);
-@@ -310,29 +420,82 @@ void wizchip_sw_reset(void)
+@@ -310,29 +427,82 @@ void wizchip_sw_reset(void)
  int8_t wizchip_init(uint8_t* txsize, uint8_t* rxsize)
  {
     int8_t i;
@@ -7004,7 +7213,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     return 0;
  }
  
-@@ -351,12 +514,20 @@ void wizchip_clrinterrupt(intr_kind intr)
+@@ -351,12 +521,20 @@ void wizchip_clrinterrupt(intr_kind intr)
     sir &= 0x0F;
  #endif
  
@@ -7027,7 +7236,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  #endif   
  }
  
-@@ -365,15 +536,22 @@ intr_kind wizchip_getinterrupt(void)
+@@ -365,15 +543,22 @@ intr_kind wizchip_getinterrupt(void)
     uint8_t ir  = 0;
     uint8_t sir = 0;
     uint16_t ret = 0;
@@ -7053,7 +7262,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     ir &= ~(1<<4); // IK_WOL
  #endif
  #if _WIZCHIP_ == 5200
-@@ -397,11 +575,11 @@ void wizchip_setinterruptmask(intr_kind intr)
+@@ -397,11 +582,11 @@ void wizchip_setinterruptmask(intr_kind intr)
     
  #if _WIZCHIP_ < 5200
     simr &= 0x0F;
@@ -7068,7 +7277,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  #else
     setIMR(imr);
     setSIMR(simr);
-@@ -413,9 +591,14 @@ intr_kind wizchip_getinterruptmask(void)
+@@ -413,9 +598,14 @@ intr_kind wizchip_getinterruptmask(void)
     uint8_t imr  = 0;
     uint8_t simr = 0;
     uint16_t ret = 0;
@@ -7085,7 +7294,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  #else
     imr  = getIMR();
     simr = getSIMR();
-@@ -434,17 +617,17 @@ intr_kind wizchip_getinterruptmask(void)
+@@ -434,17 +624,17 @@ intr_kind wizchip_getinterruptmask(void)
  
  int8_t wizphy_getphylink(void)
  {
@@ -7109,7 +7318,7 @@ index 3e54d2c90..a7e8ef1ee 100644
  #else
     tmp = -1;
  #endif
-@@ -462,7 +645,7 @@ int8_t wizphy_getphypmode(void)
+@@ -462,7 +652,7 @@ int8_t wizphy_getphypmode(void)
        else          
           tmp = PHY_POWER_NORM;
     #elif _WIZCHIP_ == 5500
@@ -7118,7 +7327,7 @@ index 3e54d2c90..a7e8ef1ee 100644
           tmp = PHY_POWER_DOWN;
        else 
           tmp = PHY_POWER_NORM;
-@@ -473,13 +656,95 @@ int8_t wizphy_getphypmode(void)
+@@ -473,13 +663,95 @@ int8_t wizphy_getphypmode(void)
  }
  #endif
  
@@ -7215,7 +7424,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     tmp |= ~PHYCFGR_RST;
     setPHYCFGR(tmp);
  }
-@@ -592,12 +857,6 @@ void wizchip_setnetinfo(wiz_NetInfo* pnetinfo)
+@@ -592,12 +864,6 @@ void wizchip_setnetinfo(wiz_NetInfo* pnetinfo)
     setGAR(pnetinfo->gw);
     setSUBR(pnetinfo->sn);
     setSIPR(pnetinfo->ip);
@@ -7228,7 +7437,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     _DNS_[0] = pnetinfo->dns[0];
     _DNS_[1] = pnetinfo->dns[1];
     _DNS_[2] = pnetinfo->dns[2];
-@@ -611,12 +870,6 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
+@@ -611,12 +877,6 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
     getGAR(pnetinfo->gw);
     getSUBR(pnetinfo->sn);
     getSIPR(pnetinfo->ip);
@@ -7241,7 +7450,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     pnetinfo->dns[0]= _DNS_[0];
     pnetinfo->dns[1]= _DNS_[1];
     pnetinfo->dns[2]= _DNS_[2];
-@@ -624,16 +877,10 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
+@@ -624,16 +884,10 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
     pnetinfo->dhcp  = _DHCP_;
  }
  
@@ -7259,7 +7468,7 @@ index 3e54d2c90..a7e8ef1ee 100644
     if(netmode & ~(NM_WAKEONLAN | NM_PPPOE | NM_PINGBLOCK)) return -1;
  #else
     if(netmode & ~(NM_WAKEONLAN | NM_PPPOE | NM_PINGBLOCK | NM_FORCEARP)) return -1;
-@@ -659,4 +906,4 @@ void wizchip_gettimeout(wiz_NetTimeout* nettime)
+@@ -659,4 +913,4 @@ void wizchip_gettimeout(wiz_NetTimeout* nettime)
  {
     nettime->retry_cnt = getRCR();
     nettime->time_100us = getRTR();
@@ -7267,7 +7476,7 @@ index 3e54d2c90..a7e8ef1ee 100644
 +}
 \ No newline at end of file
 diff --git a/drivers/wiznet5k/ethernet/wizchip_conf.h b/drivers/wiznet5k/ethernet/wizchip_conf.h
-index 4a7a7bd69..2044625f9 100644
+index 4a7a7bd69..350b34f10 100644
 --- a/drivers/wiznet5k/ethernet/wizchip_conf.h
 +++ b/drivers/wiznet5k/ethernet/wizchip_conf.h
 @@ -5,6 +5,10 @@
@@ -7466,7 +7675,7 @@ index 4a7a7bd69..2044625f9 100644
      */
     struct _CS
     {
-@@ -177,19 +253,28 @@ typedef struct __WIZCHIP
+@@ -177,12 +253,19 @@ typedef struct __WIZCHIP
     {	 
        /**
         * For BUS interface IO
@@ -7489,12 +7698,10 @@ index 4a7a7bd69..2044625f9 100644
        /**
         * For SPI interface IO
         */
-       struct
+@@ -190,6 +273,8 @@ typedef struct __WIZCHIP
        {
--         void (*_read_bytes)  (uint8_t *buf, uint32_t len);
--         void (*_write_bytes) (const uint8_t *buf, uint32_t len);
-+         void (*_read_byte)  (uint8_t *buf, uint32_t len);
-+         void (*_write_byte) (const uint8_t *buf, uint32_t len);
+          void (*_read_bytes)  (uint8_t *buf, uint32_t len);
+          void (*_write_bytes) (const uint8_t *buf, uint32_t len);
 +       //  void    (*_read_burst)  (uint8_t* pBuf, uint16_t len);
 +       //  void    (*_write_burst) (uint8_t* pBuf, uint16_t len);
        }SPI;
@@ -7688,10 +7895,10 @@ index 4a7a7bd69..2044625f9 100644
 +#endif   // _WIZCHIP_CONF_H_
 \ No newline at end of file
 diff --git a/drivers/wiznet5k/internet/dhcp/dhcp.c b/drivers/wiznet5k/internet/dhcp/dhcp.c
-index 574758259..5d139cd86 100644
+index 574758259..dfc057bb8 100644
 --- a/drivers/wiznet5k/internet/dhcp/dhcp.c
 +++ b/drivers/wiznet5k/internet/dhcp/dhcp.c
-@@ -51,13 +51,18 @@
+@@ -51,13 +51,15 @@
  
  //#include "Ethernet/socket.h"
  //#include "Internet/DHCP/dhcp.h"
@@ -7699,21 +7906,26 @@ index 574758259..5d139cd86 100644
 +#include "../../ethernet/socket.h"
  #include "dhcp.h"
 -
-+#include "py/mpthread.h"
-+#include "py/stream.h"
-+#include "py/runtime.h"
 +#include "py/mphal.h"
 +//#include "py/runtime.h"
  /* If you want to display debug & processing message, Define _DHCP_DEBUG_ in dhcp.h */
  
  #ifdef _DHCP_DEBUG_
--   #include <stdio.h>
-+   //#include <stdio.h>
-+   #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
+    #include <stdio.h>
++
  #endif   
  
  /* DHCP state machine. */
-@@ -403,12 +408,12 @@ void send_DHCP_DISCOVER(void)
+@@ -258,6 +260,8 @@ void default_ip_assign(void)
+    setSIPR(DHCP_allocated_ip);
+    setSUBR(DHCP_allocated_sn);
+    setGAR (DHCP_allocated_gw);
++   setSHAR(DHCP_CHADDR);
++
+ }
+ 
+ /* The default handler of ip changed */
+@@ -403,12 +407,12 @@ void send_DHCP_DISCOVER(void)
  	ip[1] = 255;
  	ip[2] = 255;
  	ip[3] = 255;
@@ -7728,7 +7940,7 @@ index 574758259..5d139cd86 100644
  }
  
  /* SEND DHCP REQUEST */
-@@ -503,7 +508,7 @@ void send_DHCP_REQUEST(void)
+@@ -503,7 +507,7 @@ void send_DHCP_REQUEST(void)
  	printf("> Send DHCP_REQUEST\r\n");
  #endif
  	
@@ -7737,7 +7949,7 @@ index 574758259..5d139cd86 100644
  
  }
  
-@@ -564,7 +569,7 @@ void send_DHCP_DECLINE(void)
+@@ -564,7 +568,7 @@ void send_DHCP_DECLINE(void)
  	printf("\r\n> Send DHCP_DECLINE\r\n");
  #endif
  
@@ -7746,7 +7958,7 @@ index 574758259..5d139cd86 100644
  }
  
  /* PARSE REPLY pDHCPMSG */
-@@ -576,17 +581,20 @@ int8_t parseDHCPMSG(void)
+@@ -576,17 +580,20 @@ int8_t parseDHCPMSG(void)
  
  	uint8_t * p;
  	uint8_t * e;
@@ -7770,7 +7982,7 @@ index 574758259..5d139cd86 100644
  	if (svr_port == DHCP_SERVER_PORT) {
        // compare mac address
  		if ( (pDHCPMSG->chaddr[0] != DHCP_CHADDR[0]) || (pDHCPMSG->chaddr[1] != DHCP_CHADDR[1]) ||
-@@ -673,11 +681,10 @@ uint8_t DHCP_run(void)
+@@ -673,11 +680,10 @@ uint8_t DHCP_run(void)
  {
  	uint8_t  type;
  	uint8_t  ret;
@@ -7783,7 +7995,7 @@ index 574758259..5d139cd86 100644
  
  	ret = DHCP_RUNNING;
  	type = parseDHCPMSG();
-@@ -692,7 +699,7 @@ uint8_t DHCP_run(void)
+@@ -692,7 +698,7 @@ uint8_t DHCP_run(void)
     		dhcp_state = STATE_DHCP_DISCOVER;
     		break;
  		case STATE_DHCP_DISCOVER :
@@ -7792,7 +8004,7 @@ index 574758259..5d139cd86 100644
  #ifdef _DHCP_DEBUG_
  				printf("> Receive DHCP_OFFER\r\n");
  #endif
-@@ -801,32 +808,36 @@ uint8_t DHCP_run(void)
+@@ -801,32 +807,36 @@ uint8_t DHCP_run(void)
  
  void    DHCP_stop(void)
  {
@@ -7836,7 +8048,7 @@ index 574758259..5d139cd86 100644
  					send_DHCP_REQUEST();
  				break;
  		
-@@ -837,6 +848,7 @@ uint8_t check_DHCP_timeout(void)
+@@ -837,6 +847,7 @@ uint8_t check_DHCP_timeout(void)
  			dhcp_tick_1s = 0;
  			dhcp_tick_next = dhcp_tick_1s + DHCP_WAIT_TIME;
  			dhcp_retry_count++;
@@ -7844,7 +8056,7 @@ index 574758259..5d139cd86 100644
  		}
  	} else { // timeout occurred
  
-@@ -869,7 +881,7 @@ int8_t check_DHCP_leasedIP(void)
+@@ -869,7 +880,7 @@ int8_t check_DHCP_leasedIP(void)
  
  	// IP conflict detection : ARP request - ARP reply
  	// Broadcasting ARP Request for check the IP conflict using UDP sendto() function
@@ -7853,6 +8065,14 @@ index 574758259..5d139cd86 100644
  
  	// RCR value restore
  	setRCR(tmp);
+@@ -896,6 +907,7 @@ int8_t check_DHCP_leasedIP(void)
+ void DHCP_init(uint8_t s, uint8_t * buf)
+ {
+    uint8_t zeroip[4] = {0,0,0,0};
++   
+    getSHAR(DHCP_CHADDR);
+    if((DHCP_CHADDR[0] | DHCP_CHADDR[1]  | DHCP_CHADDR[2] | DHCP_CHADDR[3] | DHCP_CHADDR[4] | DHCP_CHADDR[5]) == 0x00)
+    {
 @@ -933,6 +945,7 @@ void reset_DHCP_timeout(void)
  
  void DHCP_time_handler(void)
@@ -7862,33 +8082,125 @@ index 574758259..5d139cd86 100644
  }
  
 diff --git a/drivers/wiznet5k/internet/dns/dns.c b/drivers/wiznet5k/internet/dns/dns.c
-index c0ad570c0..df10db7d5 100644
+index c0ad570c0..397620070 100644
 --- a/drivers/wiznet5k/internet/dns/dns.c
 +++ b/drivers/wiznet5k/internet/dns/dns.c
-@@ -483,8 +483,10 @@ int16_t dns_makequery(uint16_t op, char * name, uint8_t * buf, uint16_t len)
+@@ -56,11 +56,10 @@
+ //#include "Internet/DNS/dns.h"
+ #include "../../ethernet/socket.h"
+ #include "dns.h"
+-
++#include "py/mphal.h"
+ #ifdef _DNS_DEBUG_
+-   #include <stdio.h>
++   //#include <stdio.h>
+ #endif
+-
+ #define	INITRTT		2000L	/* Initial smoothed response time */
+ #define	MAXCNAME	   (MAX_DOMAIN_NAME + (MAX_DOMAIN_NAME>>1))	   /* Maximum amount of cname recursion */
+ 
+@@ -121,9 +120,9 @@ uint8_t* pDNSMSG;       // DNS message buffer
+ uint8_t  DNS_SOCKET;    // SOCKET number for DNS
+ uint16_t DNS_MSGID;     // DNS message ID
+ 
+-extern uint32_t HAL_GetTick(void);
++//extern uint32_t HAL_GetTick(void);
+ uint32_t hal_sys_tick;
+-
++volatile uint32_t dns_tick_1s      = 0;   
+ /* converts uint16_t from network buffer to a host byte order integer. */
+ uint16_t get16(uint8_t * s)
+ {
+@@ -470,6 +469,11 @@ int16_t dns_makequery(uint16_t op, char * name, uint8_t * buf, uint16_t len)
+ 
+ 	return ((int16_t)((uint32_t)(cp) - (uint32_t)(buf)));
+ }
++void DNS_time_handler(void)
++{
++	mp_hal_delay_ms(100);
++	dns_tick_1s++;
++}
+ 
+ /*
+  *              CHECK DNS TIMEOUT
+@@ -483,13 +487,15 @@ int16_t dns_makequery(uint16_t op, char * name, uint8_t * buf, uint16_t len)
  int8_t check_DNS_timeout(void)
  {
  	static uint8_t retry_count;
+-
+-    uint32_t tick = HAL_GetTick();
+-	if(tick - hal_sys_tick >= DNS_WAIT_TIME * 1000)
 +    // TEST
 +//uint32_t tick = HAL_GetTick();
-+	uint32_t tick = 0;
- 
--    uint32_t tick = HAL_GetTick();
- 	if(tick - hal_sys_tick >= DNS_WAIT_TIME * 1000)
++	DNS_time_handler();
++	if(dns_tick_1s - hal_sys_tick >= DNS_WAIT_TIME * 1000)
  	{
- 		hal_sys_tick = tick;
-@@ -517,8 +519,9 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
+-		hal_sys_tick = tick;
++		hal_sys_tick = dns_tick_1s;
+ 		if(retry_count >= MAX_DNS_RETRY) {
+ 			retry_count = 0;
++			dns_tick_1s = 0;
+ 			return -1; // timeout occurred
+ 		}
+ 		retry_count++;
+@@ -517,9 +523,11 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
  	uint8_t ip[4];
  	uint16_t len, port;
  	int8_t ret_check_timeout;
 -
 -        hal_sys_tick = HAL_GetTick();
+-   
 +    // TEST
 +       // hal_sys_tick = HAL_GetTick();
-+        hal_sys_tick = 0;
-    
++	    DNS_time_handler();
++        hal_sys_tick = dns_tick_1s;
++	
     // Socket open
     WIZCHIP_EXPORT(socket)(DNS_SOCKET, Sn_MR_UDP, 0, 0);
+ 
+@@ -529,7 +537,6 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
+ 
+ 	len = dns_makequery(0, (char *)name, pDNSMSG, MAX_DNS_BUF_SIZE);
+ 	WIZCHIP_EXPORT(sendto)(DNS_SOCKET, pDNSMSG, len, dns_ip, IPPORT_DOMAIN);
+-
+ 	while (1)
+ 	{
+ 		if ((len = getSn_RX_RSR(DNS_SOCKET)) > 0)
+@@ -545,14 +552,12 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
+ 		// Check Timeout
+ 		ret_check_timeout = check_DNS_timeout();
+ 		if (ret_check_timeout < 0) {
+-
+ #ifdef _DNS_DEBUG_
+ 			printf("> DNS Server is not responding : %d.%d.%d.%d\r\n", dns_ip[0], dns_ip[1], dns_ip[2], dns_ip[3]);
+ #endif
+ 			return 0; // timeout occurred
+ 		}
+ 		else if (ret_check_timeout == 0) {
+-
+ #ifdef _DNS_DEBUG_
+ 			printf("> DNS Timeout\r\n");
+ #endif
+diff --git a/drivers/wiznet5k/internet/dns/dns.h b/drivers/wiznet5k/internet/dns/dns.h
+index de0039515..d9c507611 100644
+--- a/drivers/wiznet5k/internet/dns/dns.h
++++ b/drivers/wiznet5k/internet/dns/dns.h
+@@ -65,7 +65,7 @@
+  * @todo SHOULD BE defined it equal as or greater than your Domain name length + null character(1)
+  * @note SHOULD BE careful to stack overflow because it is allocated 1.5 times as MAX_DOMAIN_NAME in stack.
+  */
+-#define  MAX_DOMAIN_NAME   32       // for example "www.google.com"
++#define  MAX_DOMAIN_NAME   100       // for example "www.google.com"
+ 
+ #define	MAX_DNS_RETRY     2        ///< Requery Count
+ #define	DNS_WAIT_TIME     4        ///< Wait response time. unit 1s.
+@@ -92,5 +92,6 @@ void DNS_init(uint8_t s, uint8_t * buf);
+  * @note This function blocks until success or fail. max time = @ref MAX_DNS_RETRY * @ref DNS_WAIT_TIME
+  */
+ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns);
++void DNS_time_handler(void);
+ 
+ #endif	/* _DNS_H_ */
 diff --git a/extmod/axtls-include/axtls_os_port.h b/extmod/axtls-include/axtls_os_port.h
 index ef2683acf..836609940 100644
 --- a/extmod/axtls-include/axtls_os_port.h
@@ -7914,9 +8226,18 @@ index 67f7d8fd3..d1c257215 100644
  set(MICROPY_SOURCE_EXTMOD
      ${MICROPY_DIR}/shared/libc/abort_.c
 diff --git a/extmod/modnetwork.c b/extmod/modnetwork.c
-index 1f242de86..c61274031 100644
+index 1f242de86..4567746ef 100644
 --- a/extmod/modnetwork.c
 +++ b/extmod/modnetwork.c
+@@ -71,7 +71,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
+     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+         // TODO check IP suitability here
+-        // mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
++        //mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+         return nic;
+     }
+ 
 @@ -89,10 +89,14 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
  
      // Defined per port in mpconfigport.h
@@ -7933,19 +8254,106 @@ index 1f242de86..c61274031 100644
  };
  
  STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
+@@ -149,7 +153,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
+         netutils_parse_ipv4_addr(items[2], (uint8_t *)&netif->gw, NETUTILS_BIG);
+         ip_addr_t dns;
+         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+-        dns_setserver(0, &dns);
++        //dns_setserver(0, &dns);
+         return mp_const_none;
+     }
+ }
+diff --git a/extmod/modusocket.c b/extmod/modusocket.c
+index a42b3213f..5c9c67355 100644
+--- a/extmod/modusocket.c
++++ b/extmod/modusocket.c
+@@ -36,7 +36,6 @@
+ #include "modnetwork.h"
+ 
+ #if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+-
+ /******************************************************************************/
+ // socket class
+ 
+@@ -458,20 +457,41 @@ STATIC const mp_obj_type_t socket_type = {
+ 
+ /******************************************************************************/
+ // usocket module
+-
+ // function usocket.getaddrinfo(host, port)
+-STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
++STATIC mp_obj_t mod_usocket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
+     size_t hlen;
+-    const char *host = mp_obj_str_get_data(host_in, &hlen);
+-    mp_int_t port = mp_obj_get_int(port_in);
++    const char *host = mp_obj_str_get_data(args[0], &hlen);
++    mp_int_t port = mp_obj_get_int(args[1]);
+     uint8_t out_ip[MOD_NETWORK_IPADDR_BUF_SIZE];
+     bool have_ip = false;
+ 
++    // if constraints were passed then check they are compatible with the supported params
++    if (n_args > 2) {
++        mp_int_t family = mp_obj_get_int(args[2]);
++        mp_int_t type = 0;
++        mp_int_t proto = 0;
++        mp_int_t flags = 0;
++        if (n_args > 3) {
++            type = mp_obj_get_int(args[3]);
++            if (n_args > 4) {
++                proto = mp_obj_get_int(args[4]);
++                if (n_args > 5) {
++                    flags = mp_obj_get_int(args[5]);
++                }
++            }
++        }
++        if (!((family == 0 || family == MOD_NETWORK_AF_INET)
++              && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
++              && proto == 0
++              && flags == 0)) {
++            mp_warning(MP_WARN_CAT(RuntimeWarning), "unsupported getaddrinfo constraints");
++        }
++    }
+     if (hlen > 0) {
+         // check if host is already in IP form
+         nlr_buf_t nlr;
+         if (nlr_push(&nlr) == 0) {
+-            netutils_parse_ipv4_addr(host_in, out_ip, NETUTILS_BIG);
++            netutils_parse_ipv4_addr(args[0], out_ip, NETUTILS_BIG);
+             have_ip = true;
+             nlr_pop();
+         } else {
+@@ -494,7 +514,6 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
+             }
+         }
+     }
+-
+     if (!have_ip) {
+         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no available NIC"));
+     }
+@@ -507,7 +526,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
+     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
+     return mp_obj_new_list(1, (mp_obj_t *)&tuple);
+ }
+-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
++STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_usocket_getaddrinfo_obj, 2, 6, mod_usocket_getaddrinfo);
+ 
+ STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
+     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
 diff --git a/extmod/modussl_axtls.c b/extmod/modussl_axtls.c
-index 9d5934206..12bfd8780 100644
+index 9d5934206..4aaa9c997 100644
 --- a/extmod/modussl_axtls.c
 +++ b/extmod/modussl_axtls.c
-@@ -34,7 +34,6 @@
- #if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
+@@ -32,9 +32,7 @@
+ #include "py/objstr.h"
  
+ #if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
+-
  #include "ssl.h"
 -
  typedef struct _mp_obj_ssl_socket_t {
      mp_obj_base_t base;
      mp_obj_t sock;
-@@ -87,8 +86,7 @@ STATIC const char *const ssl_error_tab2[] = {
+@@ -87,8 +85,7 @@ STATIC const char *const ssl_error_tab2[] = {
  STATIC NORETURN void ussl_raise_error(int err) {
      MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
      MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
@@ -7955,7 +8363,21 @@ index 9d5934206..12bfd8780 100644
      const char *errstr = NULL;
      if (SSL_NOT_OK >= err && err >= SSL_EAGAIN) {
          errstr = ssl_error_tab1[SSL_NOT_OK - err];
-@@ -139,7 +137,6 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
+@@ -128,26 +125,27 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
+     o->bytes_left = 0;
+     o->sock = sock;
+     o->blocking = true;
+-
+     uint32_t options = SSL_SERVER_VERIFY_LATER;
+     if (!args->do_handshake.u_bool) {
+         options |= SSL_CONNECT_IN_PARTS;
+     }
++    
+     if (args->key.u_obj != mp_const_none) {
+         options |= SSL_NO_DEFAULT_KEY;
++        
+     }
++    
      if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
          mp_raise_OSError(MP_EINVAL);
      }
@@ -7963,37 +8385,46 @@ index 9d5934206..12bfd8780 100644
      if (args->key.u_obj != mp_const_none) {
          size_t len;
          const byte *data = (const byte *)mp_obj_str_get_data(args->key.u_obj, &len);
-@@ -154,21 +151,17 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
-             mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
+         int res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_RSA_KEY, data, len, NULL);
+         if (res != SSL_OK) {
++            
+             mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
          }
-     }
 -
-     if (args->server_side.u_bool) {
+         data = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &len);
+         res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
+         if (res != SSL_OK) {
+@@ -159,16 +157,15 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
          o->ssl_sock = ssl_server_new(o->ssl_ctx, (long)sock);
      } else {
          SSL_EXTENSIONS *ext = ssl_ext_new();
 -
-         if (args->server_hostname.u_obj != mp_const_none) {
+-        if (args->server_hostname.u_obj != mp_const_none) {
++    
++    if (args->server_hostname.u_obj != mp_const_none) {
              ext->host_name = (char *)mp_obj_str_get_str(args->server_hostname.u_obj);
          }
- 
+-
++    
          o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
 -
          if (args->do_handshake.u_bool) {
              int r = ssl_handshake_status(o->ssl_sock);
 -
++        
              if (r != SSL_OK) {
                  if (r == SSL_CLOSE_NOTIFY) { // EOF
                      r = MP_ENOTCONN;
-@@ -241,7 +234,6 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int
+@@ -241,7 +238,7 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int
  
  STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
      mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 -
++    
      if (o->ssl_sock == NULL) {
          *errcode = EBADF;
          return MP_STREAM_ERROR;
-@@ -340,8 +332,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
+@@ -340,8 +337,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
  
      struct ssl_args args;
      mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
@@ -8370,10 +8801,10 @@ index 000000000..2932933e6
 +
 +
 diff --git a/ports/rp2/machine_spi.c b/ports/rp2/machine_spi.c
-index 332f44694..e78f8f8e3 100644
+index 332f44694..4e7fa787e 100644
 --- a/ports/rp2/machine_spi.c
 +++ b/ports/rp2/machine_spi.c
-@@ -24,52 +24,8 @@
+@@ -24,51 +24,9 @@
   * THE SOFTWARE.
   */
  
@@ -8382,7 +8813,7 @@ index 332f44694..e78f8f8e3 100644
 -#include "py/mperrno.h"
 -#include "extmod/machine_spi.h"
 -#include "modmachine.h"
--
+ 
 -#include "hardware/spi.h"
 -#include "hardware/dma.h"
 -
@@ -8422,24 +8853,148 @@ index 332f44694..e78f8f8e3 100644
 -    uint8_t miso;
 -    uint32_t baudrate;
 -} machine_spi_obj_t;
- 
 +#include "machine_spi.h"
++#define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
+ 
  STATIC machine_spi_obj_t machine_spi_obj[] = {
      {
-         {&machine_spi_type}, spi0, 0,
-@@ -209,7 +165,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
+@@ -208,8 +166,8 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
+         spi_set_format(self->spi_inst, self->bits, self->polarity, self->phase, self->firstbit);
      }
  }
- 
+-
 -STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
++#if 0
 + void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
      machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
      // Use DMA for large transfers if channels are available
      const size_t dma_min_size_threshold = 32;
-@@ -269,6 +225,17 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
+@@ -221,11 +179,16 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
+         chan_rx = dma_claim_unused_channel(false);
+     }
+     bool use_dma = chan_rx >= 0 && chan_tx >= 0;
++	if(use_dma==1)
++		printf("chan_tx = %d , chan_rx = %d\r\n",chan_tx,chan_rx);
++	else if(chan_rx >=0 || chan_tx >=0)
++		printf("Not DMA : chan_tx = %d , chan_rx = %d\r\n",chan_tx,chan_rx);
+     // note src is guaranteed to be non-NULL
+     bool write_only = dest == NULL;
+ 
+     if (use_dma) {
+         uint8_t dev_null;
++		printf("Use Dma\r\n");
+         dma_channel_config c = dma_channel_get_default_config(chan_tx);
+         channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+         channel_config_set_dreq(&c, spi_get_index(self->spi_inst) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+@@ -247,27 +210,121 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
+             false);
+ 
+         dma_start_channel_mask((1u << chan_rx) | (1u << chan_tx));
++		printf("1\r\n");
+         dma_channel_wait_for_finish_blocking(chan_rx);
++		printf("2\r\n");
+         dma_channel_wait_for_finish_blocking(chan_tx);
++		printf("3\r\n");
+     }
+ 
+     // If we have claimed only one channel successfully, we should release immediately
+     if (chan_rx >= 0) {
++		printf("4\r\n");
+         dma_channel_unclaim(chan_rx);
++		printf("5\r\n");
+     }
+     if (chan_tx >= 0) {
++		printf("6\r\n");
+         dma_channel_unclaim(chan_tx);
++		printf("7\r\n");
+     }
+ 
+     if (!use_dma) {
++		//printf("Not Use Dma\r\n");
+         // Use software for small transfers, or if couldn't claim two DMA channels
+         if (write_only) {
++			//printf("4\r\n");
+             spi_write_blocking(self->spi_inst, src, len);
++			//printf("5\r\n");
+         } else {
++			//printf("6\r\n");
+             spi_write_read_blocking(self->spi_inst, src, dest, len);
++			//printf("7\r\n");
+         }
      }
  }
- 
++#else
++ void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
++    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
++    // Use DMA for large transfers if channels are available
++    const size_t dma_min_size_threshold = 32;
++    int chan_tx = -1;
++    int chan_rx = -1;
++    if (len >= dma_min_size_threshold) {
++        // Use two DMA channels to service the two FIFOs
++        chan_tx = dma_claim_unused_channel(false);
++        chan_rx = dma_claim_unused_channel(false);
++    }
++    bool use_dma = chan_rx >= 0 && chan_tx >= 0;
++	/*if(use_dma==1)
++		printf("chan_tx = %d , chan_rx = %d\r\n",chan_tx,chan_rx);
++	else if(chan_rx >=0 || chan_tx >=0)
++		printf("Not DMA : chan_tx = %d , chan_rx = %d\r\n",chan_tx,chan_rx);
++    */
++    // note src is guaranteed to be non-NULL
++    bool write_only = dest == NULL;
++
++    if (use_dma) {
++        uint8_t dev_null;
++        dma_channel_config c = dma_channel_get_default_config(chan_tx);
++        channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
++        channel_config_set_dreq(&c, spi_get_index(self->spi_inst) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
++        dma_channel_configure(chan_tx, &c,
++            &spi_get_hw(self->spi_inst)->dr,
++            write_only ? src : &dev_null,
++            len,
++            false);
++
++        c = dma_channel_get_default_config(chan_rx);
++        channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
++        channel_config_set_dreq(&c, spi_get_index(self->spi_inst) ? DREQ_SPI1_RX : DREQ_SPI0_RX);
++        channel_config_set_read_increment(&c, false);
++        channel_config_set_write_increment(&c, !write_only);
++        dma_channel_configure(chan_rx, &c,
++            write_only ? &dev_null : dest,
++            &spi_get_hw(self->spi_inst)->dr,
++            len,
++            false);
++
++        dma_start_channel_mask((1u << chan_rx) | (1u << chan_tx));
++        dma_channel_wait_for_finish_blocking(chan_rx);
++        //dma_channel_wait_for_finish_blocking(chan_tx);
++    }
++
++    // If we have claimed only one channel successfully, we should release immediately
++    if (chan_rx >= 0) {
++        dma_channel_unclaim(chan_rx);
++    }
++    if (chan_tx >= 0) {
++        dma_channel_unclaim(chan_tx);
++    }
++
++    if (!use_dma) {
++		//printf("Not Use Dma\r\n");
++        // Use software for small transfers, or if couldn't claim two DMA channels
++        if (write_only) {
++			//printf("4\r\n");
++            spi_write_blocking(self->spi_inst, src, len);
++			//printf("5\r\n");
++        } else {
++			//printf("6\r\n");
++            spi_write_read_blocking(self->spi_inst, src, dest, len);
++			//printf("7\r\n");
++        }
++    }
++}
++#endif
++
 +machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o) {
 + if (mp_obj_is_type(o, &machine_spi_type)) {
 +        machine_spi_obj_t *self = MP_OBJ_TO_PTR(o);
@@ -8450,10 +9005,9 @@ index 332f44694..e78f8f8e3 100644
 +    }
 +}
 +
-+
+ 
  STATIC const mp_machine_spi_p_t machine_spi_p = {
      .init = machine_spi_init,
-     .transfer = machine_spi_transfer,
 diff --git a/ports/rp2/machine_spi.h b/ports/rp2/machine_spi.h
 new file mode 100644
 index 000000000..802703da2
@@ -8611,10 +9165,10 @@ index af02cd193..49fd67bed 100644
  extern const mp_obj_type_t machine_spi_type;
 diff --git a/ports/rp2/modnwwiznet5k.c b/ports/rp2/modnwwiznet5k.c
 new file mode 100644
-index 000000000..2a0e12f74
+index 000000000..94714beb3
 --- /dev/null
 +++ b/ports/rp2/modnwwiznet5k.c
-@@ -0,0 +1,630 @@
+@@ -0,0 +1,627 @@
 +/*
 + * This file is part of the MicroPython project, http://micropython.org/
 + *
@@ -8702,8 +9256,8 @@ index 000000000..2a0e12f74
 +
 +
 +STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
-+    uint8_t tx_buf[100]; 
-+    //uint8_t tx_buf[4096];
++    //uint8_t tx_buf[100]; 
++    uint8_t tx_buf[2048];
 +    machine_spi_transfer((mp_obj_base_t*)wiznet5k_obj.spi ,len, tx_buf ,buf);
 +
 +}
@@ -8714,13 +9268,11 @@ index 000000000..2a0e12f74
 +
 +STATIC void wiz_dhcp_assign(void)
 +{ 
-+    wiz_NetInfo netinfo;
-+    getIPfromDHCP(netinfo.ip);
-+    getGWfromDHCP(netinfo.gw);
-+    getSNfromDHCP(netinfo.sn);
-+    getDNSfromDHCP(netinfo.dns);
-+
-+    ctlnetwork(CN_SET_NETINFO, (void *)&netinfo);
++    getIPfromDHCP(wiznet5k_obj.netinfo.ip);
++    getGWfromDHCP(wiznet5k_obj.netinfo.gw);
++    getSNfromDHCP(wiznet5k_obj.netinfo.sn);
++    getDNSfromDHCP(wiznet5k_obj.netinfo.dns);
++    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
 +}
 +
 +
@@ -8738,8 +9290,14 @@ index 000000000..2a0e12f74
 +
 +STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
 +    uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
++  
++
++    //uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {wiznet5k_obj.netinfo.dns[0],wiznet5k_obj.netinfo.dns[1],wiznet5k_obj.netinfo.dns[2],wiznet5k_obj.netinfo.dns[3]} ;
 +    uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
-+    DNS_init(0, buf);
++
++
++       
++    DNS_init(2, buf);
 +    mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
 +    m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
 +    if (ret == 1) {
@@ -9035,17 +9593,16 @@ index 000000000..2a0e12f74
 +    ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 +
 +    // set some sensible default values; they are configurable using ifconfig method
-+   /* wiz_NetInfo netinfo = {
++    wiz_NetInfo netinfo = {
 +        .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
-+        .ip = {192, 168, 0, 18},
++        .ip = {192, 168, 100, 18},
 +        .sn = {255, 255, 255, 0},
-+        .gw = {192, 168, 0, 1},
++        .gw = {192, 168, 100, 1},
 +        .dns = {8, 8, 8, 8}, // Google public DNS
 +        .dhcp = NETINFO_STATIC,
 +    };
 +    wiznet5k_obj.netinfo = netinfo;
 +    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
-+*/
 +    // seems we need a small delay after init
 +    mp_hal_delay_ms(250);
 +
@@ -9057,21 +9614,13 @@ index 000000000..2a0e12f74
 +} 
 +STATIC mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
 +    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-+    wiz_NetInfo netinfo = {
-+        .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
-+        .ip = {192, 168, 100, 18},
-+        .sn = {255, 255, 255, 0},
-+        .gw = {192, 168, 100, 1},
-+        .dns = {8, 8, 8, 8}, // Google public DNS
-+        .dhcp = NETINFO_STATIC,
-+    };
 +    //wiz_NetInfo netinfo;
 +    if (n_args == 1) {
 +        return mp_const_none;
 +    } else {
 +        if (mp_obj_is_true(args[1])) {
-+            self->netinfo = netinfo;
 +            self->netinfo.dhcp = NETINFO_DHCP;
++            //self->netinfo.mac = netinfo.mac;
 +            wiznet5k_init((void *)self);
 +
 +            mp_obj_t tuple[4] = {
@@ -9081,10 +9630,12 @@ index 000000000..2a0e12f74
 +                netutils_format_ipv4_addr(self->netinfo.dns, NETUTILS_BIG),
 +
 +            };
++            
 +            printf("netif changed  %d.%d.%d.%d\r\n",self->netinfo.ip[0],self->netinfo.ip[1],self->netinfo.ip[2],self->netinfo.ip[3]);
++            
 +            return mp_obj_new_tuple(4, tuple); 
 +        } else {
-+            self->netinfo = netinfo;
++            //self->netinfo = netinfo;
 +            self->netinfo.dhcp = NETINFO_STATIC;
 +                       
 +            ctlnetwork(CN_SET_NETINFO, (void *)&self->netinfo);
@@ -9107,6 +9658,7 @@ index 000000000..2a0e12f74
 +
 +STATIC mp_obj_t wiznet5k_init(wiznet5k_obj_t *self){
 +    uint8_t test_buf[2048];
++    
 +    uint8_t ret =0;
 +    uint8_t dhcp_retry=0;
 +    DHCP_init(1, test_buf);
@@ -9129,8 +9681,7 @@ index 000000000..2a0e12f74
 +      }
 +   
 +    if(ret == DHCP_IP_LEASED){
-+       // mp_hal_delay_ms(10);
-+        ctlnetwork(CN_GET_NETINFO, (void *)&self->netinfo);
++        ctlnetwork(CN_GET_NETINFO,&self->netinfo);
 +        return  mp_const_none;
 +    }
 +    else {
@@ -9385,7 +9936,7 @@ index 63d9818e3..296b9009e 100644
  
  #define MP_SSIZE_MAX (0x7fffffff)
 diff --git a/tools/upip.py b/tools/upip.py
-index 9fb872642..d6cfe1295 100644
+index 9fb872642..34d23d2a8 100644
 --- a/tools/upip.py
 +++ b/tools/upip.py
 @@ -16,7 +16,8 @@ import upip_utarfile as tarfile
@@ -9398,33 +9949,41 @@ index 9fb872642..d6cfe1295 100644
  index_urls = ["https://micropython.org/pi", "https://pypi.org/pypi"]
  install_path = None
  cleanup_files = []
-@@ -133,15 +134,16 @@ def url_open(url):
-         if ":" in host:
+@@ -112,6 +113,7 @@ def expandhome(s):
+     if "~/" in s:
+         h = os.getenv("HOME")
+         s = s.replace("~/", h + "/")
++        print("path ",s)
+     return s
+ 
+ 
+@@ -134,25 +136,29 @@ def url_open(url):
              host, port = host.split(":")
              port = int(port)
--        ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
-+        #ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
-+        ai = usocket.getaddrinfo(host, port)
+         ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
++        print("Address infos:", ai)
++        #ai = usocket.getaddrinfo(host, port)
      except OSError as e:
          fatal("Unable to resolve %s (no Internet?)" % host, e)
 -    # print("Address infos:", ai)
-+    print("Address infos:", ai)
      ai = ai[0]
  
      s = usocket.socket(ai[0], ai[1], ai[2])
      try:
 -        # print("Connect address:", addr)
-+        print("Connect address:", addr)
-         s.connect(ai[-1])
- 
+-        s.connect(ai[-1])
+-
++        #print("Connect address:", addr)
++        #print("Connect address:", ai[4])
++        s.connect(ai[4])
          if proto == "https:":
-@@ -149,10 +151,14 @@ def url_open(url):
+             s = ussl.wrap_socket(s, server_hostname=host)
              if warn_ussl:
                  print("Warning: %s SSL certificate is not validated" % host)
                  warn_ussl = False
+-
 +            ##211209 upip modification
 +            print("HTTPS TLS established : %s " % host) 
- 
          # MicroPython rawsocket module supports file interface directly
          s.write("GET /%s HTTP/1.0\r\nHost: %s:%s\r\n\r\n" % (urlpath, host, port))
          l = s.readline()
@@ -9455,18 +10014,19 @@ index 9fb872642..d6cfe1295 100644
      packages = data["releases"][latest_ver]
      del data
      gc.collect()
-@@ -262,8 +269,8 @@ def get_install_path():
+@@ -262,8 +269,9 @@ def get_install_path():
      if install_path is None:
          # sys.path[0] is current module's path
          install_path = sys.path[1]
 -        if install_path == ".frozen":
 -            install_path = sys.path[2]
++        install_path = "lib"
 +        #if install_path == ".frozen":
 +        #    install_path = sys.path[2]
      install_path = expandhome(install_path)
      return install_path
  
-@@ -353,4 +360,5 @@ def main():
+@@ -353,4 +361,5 @@ def main():
  
  
  if __name__ == "__main__":

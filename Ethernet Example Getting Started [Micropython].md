@@ -6,13 +6,16 @@
 
 > These sections will guide you through a series of steps from configuring development environment to running ethernet examples using the **WIZnet's ethernet products**.
 
-- [Hardware requirements](#hardware_requirements)
-- [Development environment configuration](#development_environment_configuration)
-  - [STEP1 : **Installing Micropython**](#step1--installing-circuitpython)
-  - [STEP2 : **Setup Ethernet Libraray**](#step2--setup-wiznet-ethernet-libraray)
-- [Ethernet example structure](#ethernet_example_structure)
-- [Ethernet example testing](#Ethernet_example_testing)
-- [Documentation](#Documentation)
+- [:rocket:Ethernet Example Getting Started [MicroPython]](#rocketethernet-example-getting-started-micropython)
+- [:hammer:Hardware requirements](#hammerhardware-requirements)
+- [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
+  - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
+- [STEP - 2 : **Setup Ethernet Libraray**](#step---2--setup-ethernet-libraray)
+- [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
+- [:pushpin:Ethernet example testing](#pushpinethernet-example-testing)
+- [:books:Documentation](#booksdocumentation)
+  - [Raspberry Pi Pico](#raspberry-pi-pico)
+  - [WIZnet Ethernet HAT & EVB](#wiznet-ethernet-hat--evb)
 
 
 
@@ -105,20 +108,9 @@ Below is a brief description of the patch file
  
 - Micropython
 ```cpp
-**// First Method**
-    /* Change directory */
-    // change to the library directory
-    cd [user path]/RP2040-HAT-C/libraries
-
-    // e.g.
-    cd D:/RP2040/RP2040-HAT-C/libraries
-
-    /* Patch*/
-    git apply ../../patches/0001-Added-WIZnet-Chip-library.patch
-    git apply ../../patches/0002-Added-AXTLSlibrary.patch
-**//Second Method**
-    cd [user path(=github source code setup path)]
-    /* Patch */
+  // e.g.     cd D:/RP2040/RP2040-HAT-MicroPython
+    cd [user path(=github source code setup path)] 
+    /* Patch and submodule */
     cmake CMakeLists.txt
 
 ```
