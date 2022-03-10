@@ -10,7 +10,7 @@
 - [:hammer:Hardware requirements](#hammerhardware-requirements)
 - [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
   - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
-- [STEP - 2 : **Setup Ethernet Libraray**](#step---2--setup-ethernet-libraray)
+  - [STEP - 2 : **Setup Ethernet Libraray**](#step---2--setup-ethernet-libraray)
 - [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
 - [:pushpin:Ethernet example testing](#pushpinethernet-example-testing)
 - [:books:Documentation](#booksdocumentation)
@@ -181,9 +181,11 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 # :open_file_folder:Ethernet example structure
 
-Ethernet examples are available at '**RP2040-HAT-MicroPython/example/**' directory. As of now, following examples are provided.
+Ethernet examples are available at '**RP2040-HAT-MicroPython/examples/**' directory. As of now, following examples are provided.
 
 - [**Loopback**][link-loopback]
+- [**DHCP**][link-DHCP]
+- [**UPIP**][link-UPIP]
 - [**HTTP**][link-HTTP]
   - [WebServer][link-WebServer]
   - [WebClient][link-WebClient]
@@ -197,7 +199,7 @@ Ethernet examples are available at '**RP2040-HAT-MicroPython/example/**' directo
 
 Check if the network is connected normally and if the data is sent to each other.
 
-[w5x00_Ping_Test.py](https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/example/PING_TEST/w5x00_Ping_Test.py)
+[w5x00_Ping_Test.py](https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/examples/PING_TEST/w5x00_Ping_Test.py)
 
 > This is the code to set the IP of 192.168.1.20
 >
@@ -284,13 +286,15 @@ Link
 
 
 
-[link-loopback]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/Loopback
-[link-HTTP]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/HTTP
-[link-WebServer]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/HTTP/HTTP_Server
-[link-WebClient]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/HTTP/HTTP_Client
-[link-MQTT]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/MQTT
-[link-MQTT_Pub]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/MQTT/Publish
-[link-MQTT_Sub]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/example/MQTT/Subscribe
+[link-loopback]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/Loopback
+[link-DHCP]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/DHCP
+[link-UPIP]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/UPIP
+[link-HTTP]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/HTTP
+[link-WebServer]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/HTTP/HTTP_Server
+[link-WebClient]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/HTTP/HTTP_Client
+[link-MQTT]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/MQTT
+[link-MQTT_Pub]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/MQTT/Publish
+[link-MQTT_Sub]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples/MQTT/Subscribe
 
 
 
