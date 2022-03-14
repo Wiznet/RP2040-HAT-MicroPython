@@ -157,7 +157,7 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 <a name="step--2--setup-ethernet-libraray"></a>
 
-# STEP - 2 : [**Setup Ethernet Libraray**][link-Setup Ethernet Libraray]
+# STEP - 2 : **Setup Ethernet Libraray**
 
 `First, import the library of the function you want to use from the library to your PC. To uploading a file to using Thonny IDE, follow these next steps.`
 
