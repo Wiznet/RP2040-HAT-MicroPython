@@ -10,7 +10,7 @@
 - [:hammer:Hardware requirements](#hammerhardware-requirements)
 - [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
   - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
-  - [STEP - 2 : **Setup Ethernet Libraray**](#step---2--setup-ethernet-libraray)
+  - [STEP - 2 : **Setup Ethernet Libraray**](#step--2--setup-ethernet-libraray)
 - [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
 - [:pushpin:Ethernet example testing](#pushpinethernet-example-testing)
 - [:books:Documentation](#booksdocumentation)
@@ -75,7 +75,7 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
 
 <a name="step1--installing-circuitpython"></a>
 
-## STEP - 1 : [**Installing Micropython**][link-Installing Micropython]
+## STEP - 1 : **Installing Micropython**
 
 1. Download
 If the ethernet examples are cloned, the library set as a submodule is an empty directory. Therefore, if you want to download the library set as a submodule together, clone the ethernet examples with the following Git command.
@@ -155,7 +155,7 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 
 
-<a name="step2--setup-wiznet-ethernet-libraray"></a>
+<a name="step--2--setup-ethernet-libraray"></a>
 
 # STEP - 2 : [**Setup Ethernet Libraray**][link-Setup Ethernet Libraray]
 
