@@ -67,7 +67,9 @@ def main():
             led.value(0)
         response = web_page()
         conn.send('HTTP/1.1 200 OK\n')
-        conn.send('Connection: close\n\n')
+        conn.send('Connection: close\n')
+        conn.send('Content-Type: text/html\n')
+        conn.send('Content-Length: %s\n\n' % len(response))
         conn.send(response)
         conn.close()
 

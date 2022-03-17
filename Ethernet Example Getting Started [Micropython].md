@@ -10,7 +10,7 @@
 - [:hammer:Hardware requirements](#hammerhardware-requirements)
 - [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
   - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
-  - [STEP - 2 : **Setup Ethernet Libraray**](#step---2--setup-ethernet-libraray)
+  - [STEP - 2 : **Setup Ethernet Libraray**](#step--2--setup-ethernet-libraray)
 - [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
 - [:pushpin:Ethernet example testing](#pushpinethernet-example-testing)
 - [:books:Documentation](#booksdocumentation)
@@ -75,7 +75,7 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
 
 <a name="step1--installing-circuitpython"></a>
 
-## STEP - 1 : [**Installing Micropython**][link-Installing Micropython]
+## STEP - 1 : **Installing Micropython**
 
 1. Download
 If the ethernet examples are cloned, the library set as a submodule is an empty directory. Therefore, if you want to download the library set as a submodule together, clone the ethernet examples with the following Git command.
@@ -104,8 +104,8 @@ Below is a brief description of the patch file
  ```cpp
   0001-Added-WIZnet-Chip-library.patch : about Ethernet(WIZnet Chip)
   0002-Added-AXTLSlibrary.patch : about SSL/TLS(AXTLS)
-```
- 
+ ```
+
 - Micropython
 ```cpp
   // e.g.     cd D:/RP2040/RP2040-HAT-MicroPython
@@ -116,7 +116,7 @@ Below is a brief description of the patch file
 ```
 
 After that, you can visit the micropython link below and check it
-  
+
 [![DHCP and Patch](http://img.youtube.com/vi/86opIykPE-U/0.jpg)](https://youtu.be/86opIykPE-U)
 [https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code](https://docs.micropython.org/en/latest/develop/gettingstarted.html#compile-and-build-the-code)
 
@@ -155,13 +155,21 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 
 
-<a name="step2--setup-wiznet-ethernet-libraray"></a>
+<a name="step--2--setup-ethernet-libraray"></a>
 
-# STEP - 2 : [**Setup Ethernet Libraray**][link-Setup Ethernet Libraray]
+# STEP - 2 : **Setup Ethernet Libraray**
 
 `First, import the library of the function you want to use from the library to your PC. To uploading a file to using Thonny IDE, follow these next steps.`
 
-**[Micropython Ethernet Libraries][link-Setup Ethernet Libraray]**
+You can access the *umqttsimple* library code in :point_down:
+
+https://github.com/micropython/micropython-lib/blob/master/micropython/umqtt.simple/umqtt/simple.py
+
+You can access the *urequest* library code in :point_down:
+
+https://github.com/micropython/micropython-lib/blob/master/python-ecosys/urequests/urequests.py
+
+
 
 - Create a new file, Save it in your computer with the exact name that you want, for example “**(your library name).py**”
 - Go to **Open > This computer**
@@ -273,7 +281,6 @@ Link
 
 
 [link-Micropython]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/MicroPython_Thonny.png
-[link-Setup Ethernet Libraray]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/libraries
 [link-firmware]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/firmware.png
 [link-setup_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-configure-interpreter.png
 [link-setup_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-interpreter-settings.png
