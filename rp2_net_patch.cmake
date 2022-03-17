@@ -14,6 +14,7 @@ set(MICROPY_DIR "libraries")
 set(RP2040_HAT_MP_PATCH_DIR "patches")
 set(PICO_SDK_LIB_DIR "${MICROPY_DIR}/lib/pico-sdk")
 set(AXTLS_LIB_DIR "${MICROPY_DIR}/lib/axtls")
+set(TINYUSB_LIB_DIR "${MICROPY_DIR}/lib/tinyusb")
 set(GIT_EXECUTE "git")
 set(SUBMODULES_LIST "lib/axtls lib/pico-sdk lib/tinyusb")
 
@@ -24,7 +25,13 @@ if(EXISTS "${MICROPY_DIR}/.git")
 	execute_process(COMMAND ${GIT_EXECUTABLE} -C ${MICROPY_DIR} reset --hard)
 	message(" MicroPython Lib cleaned")
 endif()
-
+# Delete untracked files in TinyUSB
+if(EXISTS "${TINYUSB_LIB_DIR}/.git")
+	message("cleaning pico-sdk...")
+	execute_process(COMMAND ${GIT_EXECUTABLE} -C ${TINYUSB_LIB_DIR} clean -fdx)
+	execute_process(COMMAND ${GIT_EXECUTABLE} -C ${TINYUSB_LIB_DIR} reset --hard)
+	message("TinyUSB Lib cleaned")
+endif()
 # Delete untracked files in pico-sdk
 if(EXISTS "${PICO_SDK_LIB_DIR}/.git")
 	message("cleaning pico-sdk...")
