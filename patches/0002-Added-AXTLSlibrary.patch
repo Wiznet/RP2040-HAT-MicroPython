@@ -29,7 +29,6 @@ index c260a2a..402d978 100644
  /* 
   * This cute trick does 4 'mul by two' at once.  Stolen from
   * Dr B. R. Gladman <brg@gladman.uk.net> but I'm sure the u-(u>>7) is
-
 diff --git a/crypto/crypto_misc.c b/crypto/crypto_misc.c
 index bba5a20..4c160a4 100644
 --- a/crypto/crypto_misc.c
@@ -46,7 +45,6 @@ index bba5a20..4c160a4 100644
      #ifdef __ANDROID__
      /* Later android releases have rand_r(), but classic ones, e.g.
         android-3 (1.5) have jrand48(). */
-
 diff --git a/ssl/asn1.c b/ssl/asn1.c
 index ed28eb3..bf88f72 100644
 --- a/ssl/asn1.c
@@ -78,7 +76,6 @@ index ed28eb3..bf88f72 100644
  {
      (*offset) += 2;        /* get past explicit tag */
      return asn1_get_int(cert, offset, val);
-
 diff --git a/ssl/crypto_misc.h b/ssl/crypto_misc.h
 index 21b59cb..2ec5203 100644
 --- a/ssl/crypto_misc.h
@@ -204,7 +201,6 @@ index e69de29..a0dd932 100644
 +
 +#endif
 +
-
 diff --git a/ssl/tls1.c b/ssl/tls1.c
 index 8c21825..52ec7c3 100755
 --- a/ssl/tls1.c
@@ -251,7 +247,6 @@ index 8f947ed..6f079c5 100644
  static int process_client_hello(SSL *ssl);
  static int send_server_hello_sequence(SSL *ssl);
  static int send_server_hello(SSL *ssl);
-
 diff --git a/ssl/x509.c b/ssl/x509.c
 index b36f205..7e67d8e 100644
 --- a/ssl/x509.c
