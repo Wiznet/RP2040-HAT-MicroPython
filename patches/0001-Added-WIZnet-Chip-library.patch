@@ -363,11 +363,7 @@ index 3ffda3a72..43ac18292 100644
  	setSn_CR(sn,Sn_CR_SEND);
  	/* wait to process the command... */
  	while(getSn_CR(sn));
-<<<<<<< HEAD
 @@ -440,37 +513,54 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
-=======
-@@ -440,37 +582,52 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t
->>>>>>> dev
        else if(tmp & Sn_IR_TIMEOUT)
        {
           setSn_IR(sn, Sn_IR_TIMEOUT);
