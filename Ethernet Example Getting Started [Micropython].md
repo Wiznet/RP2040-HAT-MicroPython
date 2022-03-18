@@ -9,6 +9,7 @@
 - [:rocket:Ethernet Example Getting Started [MicroPython]](#rocketethernet-example-getting-started-micropython)
 - [:hammer:Hardware requirements](#hammerhardware-requirements)
 - [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
+  - [Firmware Release](##Firmware)
   - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
   - [STEP - 2 : **Setup Ethernet Libraray**](#step--2--setup-ethernet-libraray)
 - [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
@@ -73,7 +74,20 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
 - If you must be need to compile the micropython ,your pc should be use Linux or Unix environment.
 
 
-<a name="step1--installing-circuitpython"></a>
+
+<a name="Firmware"></a>
+## Firmware
+
+If you want to use the firmware without compile, you can use the below firmware.
+
+Latest Releases : https://github.com/Wiznet/RP2040-HAT-MicroPython/releases
+
+V1.0.4
+ - [**W5100s** with rp2040](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5100s_20220318_v1.04.uf2)
+
+ - [**W5500** with rp2040](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5500_20220318_v1.04.uf2)
+
+<a name="step1--installing-micropython"></a>
 
 ## STEP - 1 : **Installing Micropython**
 
@@ -95,6 +109,7 @@ git clone https://github.com/Wiznet/RP2040-HAT-MicroPython.git
 With Visual Studio Code, the library set as a submodule is automatically downloaded, so it doesn't matter whether the library set as a submodule is an empty directory or not, so refer to it.
 
 
+
 2. Patch
 
 With Visual Studio Code, each library set as a submodule is automatically patched, but if you do not use Visual Studio Code, each library set as a submodule must be manually patched with the Git commands below in each library directory.
@@ -114,6 +129,38 @@ Below is a brief description of the patch file
     cmake CMakeLists.txt
 
 ```
+pa
+3.compile
+
+```cpp
+
+  cd libraries/ports/rp2
+  vi Makefile
+```
+
+If you enter this path, you can see the below code.
+
+![][link-setup_6]
+
+durning patch , if occur the fail, you can't see the below code in the Makefile.
+```cpp
+  MICROPY_PY_WIZNET5K ?= 5105 
+  //and
+  CMAKE_ARGS += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K)
+```
+
+If you want to use the w5100s and rp2040, you can just use like below code.
+
+```cpp
+  make
+```
+
+If you want to use the w5500 and rp2040, you can just use like below code.
+
+```cpp
+  make MICROPY_PY_WIZNET5K=5500
+```
+
 
 After that, you can visit the micropython link below and check it
 
@@ -287,6 +334,8 @@ Link
 [link-setup_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-bootsel.png
 [link-setup_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-firmware-install.png
 [link-setup_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/repl-connected.png
+
+[link-setup_6]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/rp2_makefile.jpg
 
 [link-mpy_lib_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_1.png
 [link-mpy_lib_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_2.png
