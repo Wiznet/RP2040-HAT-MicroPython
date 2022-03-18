@@ -129,8 +129,8 @@ Below is a brief description of the patch file
     cmake CMakeLists.txt
 
 ```
-pa
-3.compile
+
+3. compile
 
 ```cpp
 
@@ -335,7 +335,7 @@ Link
 [link-setup_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/thonny-firmware-install.png
 [link-setup_5]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/repl-connected.png
 
-[link-setup_6]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/rp2_makefile.jpg
+[link-setup_6]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/rp2_makefile.JPG
 
 [link-mpy_lib_1]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_1.png
 [link-mpy_lib_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/mpy_lib_2.png
