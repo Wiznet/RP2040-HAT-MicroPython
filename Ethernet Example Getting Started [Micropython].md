@@ -82,10 +82,7 @@ If you want to use the firmware without compile, you can use the below firmware.
 
 Latest Releases : https://github.com/Wiznet/RP2040-HAT-MicroPython/releases
 
-V1.0.4
- - [**W5100s** with rp2040](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5100s_20220318_v1.04.uf2)
-
- - [**W5500** with rp2040](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5500_20220318_v1.04.uf2)
+V1.0.4 : ▲ [**W5100s_v1.0.4.uf2**](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5100s_20220318_v1.04.uf2)  ▲  [**W5500_v1.0.4.uf2**](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5500_20220318_v1.04.uf2)
 
 <a name="step1--installing-micropython"></a>
 
