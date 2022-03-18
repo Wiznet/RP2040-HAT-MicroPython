@@ -9,7 +9,7 @@
 - [:rocket:Ethernet Example Getting Started [MicroPython]](#rocketethernet-example-getting-started-micropython)
 - [:hammer:Hardware requirements](#hammerhardware-requirements)
 - [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
-  - [Firmware Release](##Firmware)
+  - [Firmware Release](#Firmware)
   - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
   - [STEP - 2 : **Setup Ethernet Libraray**](#step--2--setup-ethernet-libraray)
 - [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
