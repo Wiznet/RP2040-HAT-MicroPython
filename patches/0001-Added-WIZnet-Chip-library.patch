@@ -9840,7 +9840,7 @@ index 805c785f2..db19b485d 100644
  void rp2_pio_deinit(void);
  
 diff --git a/ports/rp2/mpconfigport.h b/ports/rp2/mpconfigport.h
-index 63d9818e3..296b9009e 100644
+index 63d9818e3..95c0210ce 100644
 --- a/ports/rp2/mpconfigport.h
 +++ b/ports/rp2/mpconfigport.h
 @@ -27,6 +27,7 @@
@@ -9851,7 +9851,7 @@ index 63d9818e3..296b9009e 100644
  #include "hardware/spi.h"
  #include "hardware/sync.h"
  #include "pico/binary_info.h"
-@@ -72,22 +73,32 @@
+@@ -72,22 +73,31 @@
  #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
  #define MICROPY_USE_INTERNAL_ERRNO              (1)
  #define MICROPY_SCHEDULER_DEPTH                 (8)
@@ -9863,8 +9863,7 @@ index 63d9818e3..296b9009e 100644
 +#define MICROPY_PY_UERRNO                       (1)
  #define MICROPY_PY_THREAD                       (1)
 -#define MICROPY_PY_THREAD_GIL                   (0)
-+#define MICROPY_PY_THREAD_GIL                   (1)
-+//#define MICROPY_PY_THREAD_GIL                   (0)
++#define MICROPY_PY_THREAD_GIL                   (0) 
  
 +#define MICROPY_PY_NETWORK                      (1)
 +#define MICROPY_PY_USOCKET                      (1)
@@ -9886,7 +9885,7 @@ index 63d9818e3..296b9009e 100644
  #define MICROPY_PY_MACHINE_PULSE                (1)
  #define MICROPY_PY_MACHINE_PWM                  (1)
  #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (1)
-@@ -128,6 +139,7 @@ extern const struct _mp_obj_module_t mp_module_rp2;
+@@ -128,6 +138,7 @@ extern const struct _mp_obj_module_t mp_module_rp2;
  extern const struct _mp_obj_module_t mp_module_uos;
  extern const struct _mp_obj_module_t mp_module_usocket;
  extern const struct _mp_obj_module_t mp_module_utime;
@@ -9894,7 +9893,7 @@ index 63d9818e3..296b9009e 100644
  
  #if MICROPY_PY_USOCKET
  #define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-@@ -142,6 +154,14 @@ extern const struct _mp_obj_module_t mp_module_utime;
+@@ -142,6 +153,14 @@ extern const struct _mp_obj_module_t mp_module_utime;
  #define NETWORK_ROOT_POINTERS
  #endif
  
@@ -9909,7 +9908,7 @@ index 63d9818e3..296b9009e 100644
  #if MICROPY_PY_BLUETOOTH
  #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
  #else
-@@ -179,8 +199,15 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+@@ -179,8 +198,15 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
      SOCKET_BUILTIN_MODULE \
      NETWORK_BUILTIN_MODULE \
  
@@ -9927,7 +9926,7 @@ index 63d9818e3..296b9009e 100644
  
  #ifndef MICROPY_BOARD_ROOT_POINTERS
  #define MICROPY_BOARD_ROOT_POINTERS
-@@ -230,6 +257,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+@@ -230,6 +256,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
          MICROPY_HW_USBDEV_TASK_HOOK \
      } while (0);
  
