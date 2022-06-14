@@ -251,7 +251,7 @@ Ethernet examples are available at '**RP2040-HAT-MicroPython/examples/**' direct
 
 Check if the network is connected normally and if the data is sent to each other.
 
-[w5x00_Ping_Test.py](https://github.com/Wiznet-OpenHardware/RP2040-HAT-MicroPython/blob/main/examples/PING_TEST/w5x00_Ping_Test.py)
+[w5x00_Ping_Test.py](https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/examples/PING_TEST/w5x00_Ping_Test.py)
 
 > This is the code to set the IP of 192.168.1.20
 >
