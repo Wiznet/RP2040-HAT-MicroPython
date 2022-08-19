@@ -33,32 +33,42 @@ To test the **Webclient example**, minor settings shall be done in code.
 ![][link-thonny_http]
 
 2. Create a new file by pressing the **New File** button. Copy the ***urequest.py*** library code into it. You can access the *urequest* library code in the following link - https://github.com/micropython/micropython-lib/blob/master/python-ecosys/urequests/urequests.py
+2. If **[urequests.py]**, which is officially open on MicroPython, does not work, **use the code in the link below.**
+
+​		https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/examples/HTTP/HTTP_Client/HTTP_Client.py
+
+
 
 ![][link-request_lib]
 
-3. Setup SPI and Reset pin.
+4. Setup SPI and Reset pin.
 
 ```python
 spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
 ```
 
-2. Initialize ethernet interface and configuration.
+5. Initialize ethernet interface and configuration.
 
 ```python
 nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
+
+# Use Static IP
 nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+
+# Use Dynamic IP(DHCP)
+nic.active(True)
+
 while not nic.isconnected():
     time.sleep(1)
     print(nic.regs())
 ```
 
-3. HTML request, Access **HTML **.
+6. HTML request, Access **HTML **.
 
 ```python
 def request():
     #get
     r = urequest.get("http://httpbin.org/get")
-    r.raise_for_status()
     print(r.status_code)
     print(r.text)
     
@@ -78,6 +88,10 @@ def request():
 2. Text content in **HTML**.
 
 ![][link-webclient_2]
+
+3. HTTP_Client **Get**, **Post** result
+
+![][link-webclient_3]
 
 
 
@@ -110,3 +124,5 @@ Link
 [link-request_lib]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_request.png
 [link-webclient_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_1.png
 [link-webclient_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_2.png
+[link-webclient_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_3.png 
+

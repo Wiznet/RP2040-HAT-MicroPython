@@ -1,4 +1,4 @@
-import urequest
+import urequests
 from machine import Pin,SPI
 import network
 import rp2
@@ -8,19 +8,24 @@ import time
 def w5x00_init():
     spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
     nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
-    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+# Use Static IP
+    #nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))\
+# Use Dynamic IP(DHCP)
+    nic.active(True)
     while not nic.isconnected():
         time.sleep(1)
         print(nic.regs())
 
 def request():
-    r = urequest.get('http://httpbin.org/get')
-    r.raise_for_status()
+    r = urequests.get('http://httpbin.org/get')
+    #r.raise_for_status
     print(r.status_code)
     print(r.text)
-
-    r= urequest.post('http://httpbin.org/post', json={'WIZnet Test'})
+    r= urequests.post('http://httpbin.org/post', json={'WIZnet Test'})
+    if not r:
+        print('spreadsheet: no response received')
     print(r.json())
+ 
 
 def main():
     w5x00_init()
