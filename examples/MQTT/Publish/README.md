@@ -154,7 +154,7 @@ Link
 [link-mqtt_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_pub2.png
 [link-mqtt_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_pub3.png
 [link-mqtt_3]:  https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_pub4.png
-[link-mqtt_conf]: https://github.com/Wiznet/RP2040-HAT-CircuitPython/blob/master/static/images/MQTT/MQTT_conf.png
+[link-mqtt_conf]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/master/static/images/MQTT/MQTT_conf.png
 
 
 

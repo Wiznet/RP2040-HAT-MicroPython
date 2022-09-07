@@ -125,7 +125,7 @@ mosquitto_sub -h 192.168.1.20 -t hello -m "Hello Pico"
 
 - The following error might occur while running the MQTT_sub example: Disabling the "**setblocking**" function on the **180 line of mqttsimple.py** will work fine.
 
-![][setblocking]
+![][link-setblocking]
 
 
 
