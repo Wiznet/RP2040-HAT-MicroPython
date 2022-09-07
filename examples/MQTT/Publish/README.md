@@ -119,8 +119,8 @@ mosquitto_sub -h 192.168.1.11 -t hello
 - In Mosquitto versions earlier than 2.0 the default is to allow clients to connect without authentication. In 2.0 and up, you must choose your authentication options explicitly before clients can connect. Therefore, if you are using version 2.0 or later, refer to following link to setup 'mosquitto.conf' in the directory where Mosquitto is installed.
 
     - [**Authentication Methods**][link-authentication_methods]
-
-![][link-mqtt_conf]
+    
+    ![][link-mqtt_conf]
 
 
 
@@ -155,5 +155,8 @@ Link
 [link-mqtt_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_pub3.png
 [link-mqtt_3]:  https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_pub4.png
 [link-mqtt_conf]: https://github.com/Wiznet/RP2040-HAT-CircuitPython/blob/master/static/images/MQTT/MQTT_conf.png
+
+
+
 [link-authentication_methods]: https://mosquitto.org/documentation/authentication-methods/
 

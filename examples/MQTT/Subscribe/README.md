@@ -123,6 +123,10 @@ mosquitto_sub -h 192.168.1.20 -t hello -m "Hello Pico"
 
 ![][link-mqtt_conf]
 
+- The following error might occur while running the MQTT_sub example: Disabling the "**setblocking**" function on the **180 line of mqttsimple.py** will work fine.
+
+![][setblocking]
+
 
 
 ## Attach
@@ -144,6 +148,8 @@ Link
 [link-mosquitto]: https://mosquitto.org/download/
 [link-wireshark]: https://www.wireshark.org/#download
 
+[link-authentication_methods]: https://mosquitto.org/documentation/authentication-methods/
+
 
 
 
@@ -154,3 +160,4 @@ Link
 [link-mqtt_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_2.png
 [link-mqtt_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_sub_3.png
 [link-mqtt_conf]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/MQTT_conf.png
+[link-setblocking]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/MQTT/setblocking.png
