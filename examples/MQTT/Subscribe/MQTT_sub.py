@@ -1,14 +1,13 @@
 from umqttsimple import MQTTClient
-import time
-import ubinascii
-from machine import Pin,SPI
 from usocket import socket
+from machine import Pin,SPI
 import network
 import rp2
+import time
 
 #mqtt config
-mqtt_server = '192.168.1.11'
-client_id = "wiz"
+mqtt_server = '192.168.11.2'
+client_id = 'wiz'
 topic_sub = b'hello'
 
 last_message = 0
@@ -19,11 +18,19 @@ counter = 0
 def w5x00_init():
     spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
     nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
-    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+    nic.active(True)
+    
+    #None DHCP
+    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
+    
+    #DHCP
+    #nic.ifconfig('dhcp')
+    print('IP address :', nic.ifconfig())
+    
     while not nic.isconnected():
         time.sleep(1)
         print(nic.regs())
-
+    
 def sub_cb(topic, msg):
     print((topic.decode('utf-8'), msg.decode('utf-8')))
 
@@ -40,10 +47,10 @@ def reconnect():
     print('Failed to connected to Broker. Reconnecting...')
     time.sleep(5)
     machine.reset()
-
-#subscribe
+    
 def main():
     w5x00_init()
+    
     try: 
         client = mqtt_connect()
     except OSError as e:
@@ -57,3 +64,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
