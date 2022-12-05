@@ -1,23 +1,16 @@
 from usocket import socket
 from machine import Pin,SPI
-import network
-import rp2
 import time
 
-led = Pin(25, Pin.OUT)
-
-#W5x00 chip init
 def w5x00_init():
     spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
-    nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
+    nic = network.WIZNET5K(spi,Pin(17),Pin(20))
     nic.active(True)
-    
-    #None DHCP
-    #nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
-    
-    #DHCP
+# If you use the Dynamic IP(DHCP), you must use the "nic.ifconfig('dhcp')".
     nic.ifconfig('dhcp')
-    
+# If you use the Static IP, you must use the  "nic.ifconfig("IP","subnet","Gateway","DNS")".
+    #nic.ifconfig(('192.168.100.13','255.255.255.0','192.168.100.1','8.8.8.8'))
+       
     print('IP address :', nic.ifconfig())
     while not nic.isconnected():
         time.sleep(1)
