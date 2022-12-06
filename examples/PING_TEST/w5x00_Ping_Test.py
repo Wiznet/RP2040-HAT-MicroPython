@@ -1,4 +1,3 @@
-from usocket import socket
 from machine import Pin,SPI
 import network
 import time
