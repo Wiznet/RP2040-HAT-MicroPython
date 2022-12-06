@@ -1,10 +1,7 @@
 from usocket import socket
 from machine import Pin,SPI
 import network
-import rp2
 import time
-
-led = Pin(25, Pin.OUT)
 
 #W5x00 chip init
 def w5x00_init():
@@ -13,7 +10,7 @@ def w5x00_init():
     nic.active(True)
     
     #None DHCP
-    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
+    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
     
     #DHCP
     #nic.ifconfig('dhcp')
@@ -56,7 +53,7 @@ def web_page():
 def main():
     w5x00_init()
     s = socket()
-    s.bind(('192.168.11.20', 80))
+    s.bind(('192.168.1.20', 80))
     s.listen(5)
 
     while True:

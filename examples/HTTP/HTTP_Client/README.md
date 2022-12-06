@@ -51,16 +51,19 @@ spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
 
 ```python
 nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
-
-# Use Static IP
-nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
-
-# Use Dynamic IP(DHCP)
+nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
 nic.active(True)
 
-while not nic.isconnected():
-    time.sleep(1)
-    print(nic.regs())
+#None DHCP
+    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+    
+#DHCP
+    #nic.ifconfig('dhcp')
+    print('IP address :', nic.ifconfig())
+    
+    while not nic.isconnected():
+        time.sleep(1)
+        print(nic.regs())
 ```
 
 6. HTML request, Access **HTML **.
@@ -124,5 +127,5 @@ Link
 [link-request_lib]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_request.png
 [link-webclient_1]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_1.png
 [link-webclient_2]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_2.png
-[link-webclient_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_3.png 
+[link-webclient_3]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/HTTP/webclient_3.png
 

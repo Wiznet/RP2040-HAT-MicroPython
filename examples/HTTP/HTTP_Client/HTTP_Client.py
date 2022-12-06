@@ -2,10 +2,7 @@ from usocket import socket
 from machine import Pin,SPI
 import urequests
 import network
-import rp2
 import time
-
-led = Pin(25, Pin.OUT)
 
 #W5x00 chip init
 def w5x00_init():
@@ -13,10 +10,10 @@ def w5x00_init():
     nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
     nic.active(True)
     
-    #None DHCP
-    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
+#None DHCP
+    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
     
-    #DHCP
+#DHCP
     #nic.ifconfig('dhcp')
     print('IP address :', nic.ifconfig())
     
