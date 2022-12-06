@@ -1,6 +1,9 @@
+from usocket import socket
 from machine import Pin,SPI
 import network
 import time
+
+led = Pin(25, Pin.OUT)
 
 #W5x00 chip init
 def w5x00_init():
@@ -15,6 +18,12 @@ def w5x00_init():
         
 def main():
     w5x00_init()
+
+    while True:
+        led.value(1)
+        time.sleep(1)
+        led.value(0)
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
