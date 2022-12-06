@@ -1,36 +1,40 @@
 
 <a name="Ethernet_Example_Getting_Started"></a>
-:rocket:Ethernet Example Getting Started [MicroPython]
+Ethernet Example Getting Started
 ===========================
 
 
 > These sections will guide you through a series of steps from configuring development environment to running ethernet examples using the **WIZnet's ethernet products**.
 
-- [:rocket:Ethernet Example Getting Started [MicroPython]](#rocketethernet-example-getting-started-micropython)
-- [:hammer:Hardware requirements](#hammerhardware-requirements)
-- [:bulb:Development environment configuration](#bulbdevelopment-environment-configuration)
-  - [Firmware Release](#Firmware)
-  - [STEP - 1 : **Installing Micropython**](#step---1--installing-micropython)
-  - [STEP - 2 : **Setup Ethernet Libraray**](#step--2--setup-ethernet-libraray)
-- [:open_file_folder:Ethernet example structure](#open_file_folderethernet-example-structure)
-- [:pushpin:Ethernet example testing](#pushpinethernet-example-testing)
-- [:books:Documentation](#booksdocumentation)
+
+- [Ethernet Example Getting Started](#ethernet-example-getting-started)
+- [Hardware requirements](#hardware-requirements)
+- [Development environment configuration](#development-environment-configuration)
+- [Wiznet5K Library](#wiznet5k-library)
+  - [Building](#building)
+  - [Deploying firmware to the device](#deploying-firmware-to-the-device)
+  - [Thonny](#thonny)
+  - [Sample code](#sample-code)
+    - [Ping](#ping)
+- [Ethernet example structure](#ethernet-example-structure)
+- [Documentation](#documentation)
   - [Raspberry Pi Pico](#raspberry-pi-pico)
-  - [WIZnet Ethernet HAT & EVB](#wiznet-ethernet-hat--evb)
+  - [WIZnet Ethernet HAT \& EVB](#wiznet-ethernet-hat--evb)
 
 
 
 <a name="hardware_requirements"></a>
 
-# :hammer:Hardware requirements
+# Hardware requirements
 
-> The ethernet examples use **Raspberry Pi Pico** and **WIZnet Ethernet HAT** ethernet I/O module built on WIZnet's [**W5100S**][link-w5100s] ethernet chip or **W5100S-EVB-Pico** ethernet I/O module built on [**RP2040**][link-rp2040] and WIZnet's [**W5100S**][link-w5100s] ethernet chip.
+> The ethernet examples use **Raspberry Pi Pico** and **WIZnet Ethernet HAT** ethernet I/O module built on WIZnet's [**W5100S**][link-w5100s] ethernet chip or **W5100S-EVB-Pico** ethernet I/O module built on [**RP2040**][link-rp2040] and WIZnet's [**W5100S**][link-w5100s] ethernet chip or **W5500-EVB-Pico** ethernet I/O module built on [**RP2040**][link-rp2040] and WIZnet's [**W5500**][link-w5500] ethernet chip.
 
 | Image                                                        | Name                                                      | Etc                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------ |
 | <image src= "./static/images/START/raspberrypi_pico.PNG" width="200px" height="110px"> | [**Raspberry Pi Pico**][link-raspberry_pi_pico]           | [Pico Document](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html) |
 | <image src= "./static/images/START/WIZnet-Ethernet-HAT-1.png" width="240px" height="80px"> | [**WIZnet Ethernet HAT**][link-wiznet_ethernet_hat]       | [Ethernet HAT Datasheet](https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat) |
 | <image src= "./static/images/START/W5100S-EVB-Pico_1.png" width="250px" height="90px"> | [**WIZnet W5100S-EVB-Pico**][link-wiznet_W5100S_evb_pico] | [W5100S-EVB-Pico Datasheet][link-wiznet_W5100S_evb_pico]     |
+| <image src= "./static/images/START/W5500-EVB-Pico.png" width="250px" height="90px"> | [**WIZnet W5500-EVB-Pico**][link-wiznet_W5500_evb_pico] | [W5500-EVB-Pico Datasheet][link-wiznet_W5500_evb_pico]     |
 
 > ### Pin Diagram
 
@@ -62,8 +66,7 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
 
 <a name="development_environment_configuration"></a>
 
-# :bulb:Development environment configuration
-
+# Development environment configuration
 
 
 > To test the ethernet examples, the development environment must be configured to use Raspberry Pi Pico. 
@@ -73,20 +76,13 @@ In the W5100S-EVB-Pico board, GPIO pins are connected the same as the Raspberry 
    - [Thonny](https://thonny.org/) (that makes it easier to use micropython) 
 - If you must be need to compile the micropython ,your pc should be use Linux or Unix environment.
 
+------
 
+<a name="wiznet5k"></a>
+# Wiznet5K Library
 
-<a name="Firmware"></a>
-## Firmware
-
-If you want to use the firmware without compile, you can use the below firmware.
-
-Latest Releases : https://github.com/Wiznet/RP2040-HAT-MicroPython/releases
-
-V1.0.4 : ▲ [**W5100s_v1.0.4.uf2**](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5100s_20220318_v1.04.uf2)  ▲  [**W5500_v1.0.4.uf2**](https://github.com/Wiznet/RP2040-HAT-MicroPython/releases/download/v1.0.4/rp2_w5500_20220318_v1.04.uf2)
-
-<a name="step1--installing-micropython"></a>
-
-## STEP - 1 : **Installing Micropython**
+<a name="Building"></a>
+## Building
 
 1. Download
 If the ethernet examples are cloned, the library set as a submodule is an empty directory. Therefore, if you want to download the library set as a submodule together, clone the ethernet examples with the following Git command.
@@ -170,9 +166,28 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
  - **https://projects.raspberrypi.org/en/projects/getting-started-with-the-pico/0**
 
+-------
+
+
+<a name="Deploying firmware to the device"></a>
+## Deploying firmware to the device
+
+If MicroPython is already installed then the bootloader can be entered by executing `import machine; machine.bootloader()` at the `REPL`.
+
+<U>If you want to use the firmware without build, you can use the below firmware.</U>
+
+ - Latest Releases : https://github.com/Wiznet/RP2040-HAT-MicroPython/releases
+
+Firmware can be deployed to the device by putting it into bootloader mode (hold down `BOOTSEL` while powering on or resetting) and then copying `rp2_xxxx_date_ver.uf2` to the USB mass storage device that appears.
+
 
 
 ------
+## Thonny
+
+<details>
+<summary>  How To Use Thonny   </summary>
+
 
 - The drive will be called **RPI-RP2** on all RP2040 boards. Download the **UF2**(firmware.uf2) file from the link below and put the file in Pico.
 
@@ -197,67 +212,53 @@ Install `Thonny IDE` on Raspberry Pi Pico by referring to the link above.:point_
 
 ![][link-setup_5]
 
+</details>
 
+<a name="sample-code"></a>
 
-<a name="step--2--setup-ethernet-libraray"></a>
+## Sample code
 
-# STEP - 2 : **Setup Ethernet Libraray**
+The following samples can be easily run on the board, then cut-and-pasting the sample code into the Thonny Tool, then executing the code with **Ctrl-D** and **F5**.
 
-`First, import the library of the function you want to use from the library to your PC. To uploading a file to using Thonny IDE, follow these next steps.`
+### Ping 
 
-You can access the *umqttsimple* library code in :point_down:
-
-https://github.com/micropython/micropython-lib/blob/master/micropython/umqtt.simple/umqtt/simple.py
-
-You can access the *urequest* library code in :point_down:
-
-https://github.com/micropython/micropython-lib/blob/master/python-ecosys/urequests/urequests.py
-
-
-
-- Create a new file, Save it in your computer with the exact name that you want, for example “**(your library name).py**”
-- Go to **Open > This computer**
-
-![][link-mpy_lib_1]
-
-- The file should be saved on RPi Pico with the name **“(your library name).py”**
-- Go to **File > Save as > Raspberry Pi Pico**
-
-![][link-mpy_lib_2]
-
-
-
-
-
-<a name="ethernet_example_structure"></a>
-
-# :open_file_folder:Ethernet example structure
-
-Ethernet examples are available at '**RP2040-HAT-MicroPython/examples/**' directory. As of now, following examples are provided.
-
-- [**Loopback**][link-loopback]
-- [**DHCP**][link-DHCP]
-- [**UPIP**][link-UPIP]
-- [**HTTP**][link-HTTP]
-  - [WebServer][link-WebServer]
-  - [WebClient][link-WebClient]
-- [**MQTT**][link-MQTT]
-  - [Publish][link-MQTT_Pub]
-  - [Subscribe][link-MQTT_Sub]
-
-<a name="Ethernet_example_testing"></a>
-
-# :pushpin:Ethernet example testing
-
-Check if the network is connected normally and if the data is sent to each other.
-
-[w5x00_Ping_Test.py](https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/examples/PING_TEST/w5x00_Ping_Test.py)
-
+This ping test is to check the network environment using static ip and wiznet chip.
 > This is the code to set the IP of 192.168.1.20
 >
 > I hope that the PC also has an environment that communicates with 192.168.1.xxx.
 
-1. Copy the content to code.py on your RPi Pico and run.
+
+
+```python
+from machine import Pin,SPI
+import network
+import time
+
+led = Pin(25, Pin.OUT)
+
+#W5x00 chip init
+def w5x00_init():
+    spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
+    nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
+    nic.active(True)
+    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+    while not nic.isconnected():
+        time.sleep(1)
+        print(nic.regs())
+    print(nic.ifconfig())
+        
+def main():
+    w5x00_init()
+    
+    while True:
+        led.value(1)
+        time.sleep(1)
+        led.value(0)
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
+```
 
 ![][link-ping_1]
 
@@ -278,12 +279,31 @@ ping 192.168.1.20 (-option)
 ![][link-ping_4]
 
 
+<a name="ethernet_example_structure"></a>
+
+# Ethernet example structure
+
+Ethernet examples are available at [RP2040-HAT-MicroPython/examples](https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/examples) directory. As of now, following examples are provided.
+
+- [**Loopback**][link-loopback]
+- [**DHCP**][link-DHCP]
+- [**UPIP**][link-UPIP]
+- [**HTTP**][link-HTTP]
+  - [WebServer][link-WebServer]
+  - [WebClient][link-WebClient]
+- [**MQTT**][link-MQTT]
+  - [Publish][link-MQTT_Pub]
+  - [Subscribe][link-MQTT_Sub]
+
+<a name="Ethernet_example_testing"></a>
+
+
 
 
 
 <a name="Documentation"></a>
 
-# :books:Documentation
+# Documentation
 
 Documentation for WIZnet Ethernet HAT and Raspberry pi pico board
 ## Raspberry Pi Pico
@@ -293,8 +313,8 @@ Documentation for WIZnet Ethernet HAT and Raspberry pi pico board
 
 ## WIZnet Ethernet HAT & EVB
  [**WIZnet Ethernet HAT**](https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat)
-
  [**W5100S-EVB-Pico**](https://docs.wiznet.io/Product/iEthernet/W5100S/w5100s-evb-pico)
+ [**W5500-EVB-Pico**](https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico)
 
 Please refer to 'README.md' in each examples directory to find detail guide for testing ethernet examples.
 
@@ -310,6 +330,7 @@ Link
 
 [link-Installing Micropython]:https://thonny.org/
 [link-w5100s]: https://docs.wiznet.io/Product/iEthernet/W5100S/overview
+[link-w5500]: https://docs.wiznet.io/Product/iEthernet/W5500/overview
 [link-rp2040]: https://www.raspberrypi.org/products/rp2040/
 
 
@@ -320,6 +341,7 @@ Link
 [link-raspberry_pi_pico]: https://www.raspberrypi.org/products/raspberry-pi-pico
 [link-wiznet_ethernet_hat]: https://docs.wiznet.io/Product/Open-Source-Hardware/wiznet_ethernet_hat
 [link-wiznet_W5100S_evb_pico]:https://docs.wiznet.io/Product/iEthernet/W5100S/w5100s-evb-pico
+[link-wiznet_W5500_evb_pico]:https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico
 [link-library]:https://github.com/Wiznet/RP2040-HAT-MicroPython/tree/main/libraries
 
 
