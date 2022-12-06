@@ -2,11 +2,10 @@ from umqttsimple import MQTTClient
 from usocket import socket
 from machine import Pin,SPI
 import network
-import rp2
 import time
 
 #mqtt config
-mqtt_server = '192.168.11.2'
+mqtt_server = '192.168.1.2'
 client_id = 'wiz'
 topic_sub = b'hello'
 
@@ -21,7 +20,7 @@ def w5x00_init():
     nic.active(True)
     
     #None DHCP
-    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
+    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.1.1','8.8.8.8'))
     
     #DHCP
     #nic.ifconfig('dhcp')
