@@ -39,6 +39,7 @@ spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
 ```python
 nic = network.WIZNET5K(spi,Pin(17),Pin(20)) #spi,cs,reset pin
 nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
+nic.active(True)
 while not nic.isconnected():
     time.sleep(1)
     print(nic.regs())
@@ -159,5 +160,4 @@ Link
 [link-loopback_client_2]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_client_2.png
 [link-loopback_client_3]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_client_3.png
 [link-loopback_client_4]:https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/Loopback/Loopback_client_4.png
-
 

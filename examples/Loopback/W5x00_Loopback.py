@@ -10,7 +10,7 @@ def w5x00_init():
     nic.active(True)
     
     #None DHCP
-    nic.ifconfig(('192.168.11.20','255.255.255.0','192.168.11.1','8.8.8.8'))
+    nic.ifconfig(('192.168.1.20','255.255.255.0','192.168.1.1','8.8.8.8'))
     
     #DHCP
     #nic.ifconfig('dhcp')
@@ -22,7 +22,7 @@ def w5x00_init():
     
 def server_loop(): 
     s = socket()
-    s.bind(('192.168.11.20', 5000)) #Source IP Address
+    s.bind(('192.168.1.20', 5000)) #Source IP Address
     s.listen(5)
     
     print("TEST server")
@@ -37,7 +37,7 @@ def server_loop():
 
 def client_loop():
     s = socket()
-    s.connect(('192.168.11.2', 5000)) #Destination IP Address
+    s.connect(('192.168.1.2', 5000)) #Destination IP Address
     
     print("Loopback client Connect!")
     while True:
