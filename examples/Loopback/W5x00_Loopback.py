@@ -1,10 +1,7 @@
 from usocket import socket
 from machine import Pin,SPI
 import network
-import rp2
 import time
-
-led = Pin(25, Pin.OUT)
 
 #W5x00 chip init
 def w5x00_init():
