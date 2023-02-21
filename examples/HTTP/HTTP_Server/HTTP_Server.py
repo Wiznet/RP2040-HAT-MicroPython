@@ -3,6 +3,8 @@ from machine import Pin,SPI
 import network
 import time
 
+led = Pin(25, Pin.OUT)
+
 #W5x00 chip init
 def w5x00_init():
     spi=SPI(0,2_000_000, mosi=Pin(19),miso=Pin(16),sck=Pin(18))
