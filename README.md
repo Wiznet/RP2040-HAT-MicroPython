@@ -3,7 +3,7 @@
 ⚠️ **This repository is no longer maintained and has been archived.**
 
 👉 Please use the new repository instead:  
-**[WIZnet-EVB-Pico-micropython](https://github.com/Wiznet/WIZnet-EVB-Pico-micropython)**  
+**[WIZnet-EVB-Pico-micropython](https://github.com/WIZnet-ioNIC/WIZnet-EVB-Pico-micropython)**  
 **[WIZnet-EVB-Pico-micropython-examples](https://github.com/WIZnet-ioNIC/WIZnet-EVB-Pico-micropython-examples.git)**
 
 ---
