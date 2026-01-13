@@ -1,38 +1,38 @@
-# WIZnet RP2040-HAT-MicroPython
+# RP2040-HAT-MicroPython (Archived)
 
-- [Overview](#overview)
-- [MicroPython Getting Started][link-getting_started]
+⚠️ **This repository is no longer maintained and has been archived.**
 
+👉 Please use the new repository instead:  
+**[WIZnet-EVB-Pico-micropython](https://github.com/Wiznet/WIZnet-EVB-Pico-micropython)**  
+**[WIZnet-EVB-Pico-micropython-examples](https://github.com/WIZnet-ioNIC/WIZnet-EVB-Pico-micropython-examples.git)**
 
-
-
-<a name="overview"></a>
-
-# 📘Overview
-
-WIZnet W5100S Ethernet Shield includes W5100S chip - hardwired TCP/IP internet controller. The Ethernet Shield is connected to the Raspberry Pi Pico via SPI interface, making it easy to add Ethernet communication ability. Another option is using WIZ810Sio module which is also built on W5100S chip.
-
-![][link-wiznet_pico_]
-
-<a name="start"></a>
-
-# 🚀MicroPython Getting Started
-
-Please refer to [getting_stared.md][link-getting_started] for examples usage. 
-
-![][link-getting_image]
+---
 
 
+## Why archived?
 
+- [The new repository](https://github.com/Wiznet/WIZnet-EVB-Pico-micropython) consolidates support for all **official WIZnet EVB boards**.
 
+  Supported Boards
 
+  | Board Series     | Pico                  | Pico2                   |
+  |------------------|-----------------------|-------------------------|
+  | **W5100S-EVB**   | ✅ W5100S-EVB-Pico    | ✅ W5100S-EVB-Pico2     |
+  | **W5500-EVB**    | ✅ W5500-EVB-Pico     | ✅ W5500-EVB-Pico2      |
+  | **W55RP20-EVB**  | ✅ W55RP20-EVB-Pico   | -                       |
+  | **W6100-EVB**    | ✅ W6100-EVB-Pico     | ✅ W6100-EVB-Pico2      |
+  | **W6300-EVB**    | ✅ W6300-EVB-Pico     | ✅ W6300-EVB-Pico2      |
+- It provides both **TCP/IP offload stack and Raw Ethernet (LwIP) mode** support.
 
+---
 
+## Migration
 
-<!--
-Link
--->
+If you were previously using this repository, please migrate your projects to the new repository.
 
-[link-wiznet_pico_]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/WIZnet_PICO_.jpg
-[link-getting_image]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/static/images/START/MicroPython_Thonny.png
-[link-getting_started]: https://github.com/Wiznet/RP2040-HAT-MicroPython/blob/main/Ethernet%20Example%20Getting%20Started%20%5BMicropython%5D.md
+---
+
+## License
+
+This project remains under the original open-source licenses (MIT / BSD, depending on the component files).  
+Please refer to the license headers in each source file for details.
